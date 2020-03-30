@@ -43,6 +43,36 @@ func (b *fence) Render(buf *bytes.Buffer, f FlagSet) {
 	}
 }
 
+func Extract(b Block, buf *bytes.Buffer, f FlagSet, tag string) {
+	switch e := b.(type) {
+	case *pair:
+		Extract(e.l, buf, f, tag)
+		Extract(e.r, buf, f, tag)
+	case *fence:
+		if e.tag == tag {
+			// We found it! Render according to the flagSet.
+			e.contents.Render(buf, f)
+		} else {
+			// This is not the block we were looking for. Keep digging.
+			Extract(e.contents, buf, f, tag)
+		}
+	}
+}
+
+func concat(l, r Block) Block {
+	// We could maybe do this "optimization," if we're going to re-render a tree
+	// a lot. Kind of annoyingly quadratic, though.
+	// ll, ok1 := l.(*literal)
+	// rl, ok2 := r.(*literal)
+	// if ok1 && ok2 {
+	// 	return &literal{
+	// 		contents: ll.contents + rl.contents,
+	// 	}
+	// }
+
+	return &pair{l, r}
+}
+
 type tokStream struct {
 	buffered token
 	r        *bufio.Reader
@@ -134,7 +164,7 @@ func build(in *tokStream) (Block, error) {
 		}
 
 		for n, err := build(in); err == nil; n, err = build(in) {
-			result = &pair{result, n}
+			result = concat(result, n)
 			r, _ := in.Peek()
 			if r.k == endBlockKind {
 				// Skip over it.
@@ -158,7 +188,7 @@ func New(in io.Reader) (Block, error) {
 	result = &literal{""}
 
 	for n, err := build(r); err == nil; n, err = build(r) {
-		result = &pair{result, n}
+		result = concat(result, n)
 	}
 	return result, nil
 }

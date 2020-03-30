@@ -5,13 +5,19 @@ world
 //)
 ----
 
+# Render out the document, `w` is not enabled so it is not rendered.
 render name=t flags=()
 ----
 hello
 
+# Render out the document, `w` is enabled so it is rendered.
 render name=t flags=(w)
 ----
 hello
+world
+
+extract name=t section=w
+----
 world
 
 load name=u
@@ -44,3 +50,12 @@ world!!!
 render name=u flags=(v)
 ----
 hello
+
+extract name=u section=w
+----
+world
+
+extract name=u section=w flags=(v)
+----
+world
+world!!!

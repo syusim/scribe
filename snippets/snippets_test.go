@@ -33,6 +33,25 @@ func TestSnippets(t *testing.T) {
 				}
 				files[name] = result
 				return ""
+			case "extract":
+				flagSet := make(FlagSet)
+				var name string
+				var section string
+				for _, a := range d.CmdArgs {
+					switch a.Key {
+					case "flags":
+						for _, f := range a.Vals {
+							flagSet[f] = struct{}{}
+						}
+					case "name":
+						name = a.Vals[0]
+					case "section":
+						section = a.Vals[0]
+					}
+				}
+				var buf bytes.Buffer
+				Extract(files[name], &buf, flagSet, section)
+				return buf.String()
 			case "render":
 				flagSet := make(FlagSet)
 				var name string
