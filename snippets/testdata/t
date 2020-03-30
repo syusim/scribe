@@ -1,0 +1,46 @@
+load name=t
+hello
+//(w
+world
+//)
+----
+
+render name=t flags=()
+----
+hello
+
+render name=t flags=(w)
+----
+hello
+world
+
+load name=u
+hello
+//(w
+world
+//(v
+world!!!
+//)
+//)
+----
+
+render name=u flags=()
+----
+hello
+
+render name=u flags=(w)
+----
+hello
+world
+
+render name=u flags=(w,v)
+----
+hello
+world
+world!!!
+
+# Even though `v` is on, it doesn't get rendered since
+# it's nested within `w`.
+render name=u flags=(v)
+----
+hello
