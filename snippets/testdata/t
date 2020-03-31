@@ -27,6 +27,7 @@ world
 //(v
 world!!!
 //)
+after
 //)
 ----
 
@@ -38,12 +39,14 @@ render name=u flags=(w)
 ----
 hello
 world
+after
 
 render name=u flags=(w,v)
 ----
 hello
 world
 world!!!
+after
 
 # Even though `v` is on, it doesn't get rendered since
 # it's nested within `w`.
@@ -54,8 +57,10 @@ hello
 extract name=u section=w
 ----
 world
+after
 
 extract name=u section=w flags=(v)
 ----
 world
 world!!!
+after
