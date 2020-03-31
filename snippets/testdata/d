@@ -1,0 +1,36 @@
+load name=t
+we want the following thing to be deleted if the flag is on
+//[w
+//abd
+//def
+//]
+----
+
+render name=t flags=()
+----
+we want the following thing to be deleted if the flag is on
+abd
+def
+
+load name=u
+if foo == bar {
+  //[w
+  //fmt.Println("hello")
+  //]
+  //(w
+  fmt.Println("world")
+  //)
+}
+----
+
+render name=u flags=()
+----
+if foo == bar {
+  fmt.Println("hello")
+}
+
+render name=u flags=(w)
+----
+if foo == bar {
+  fmt.Println("world")
+}

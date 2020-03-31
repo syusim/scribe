@@ -64,3 +64,19 @@ extract name=u section=w flags=(v)
 world
 world!!!
 after
+
+load name=v
+hello
+//(w
+world //)
+----
+
+render name=v flags=()
+----
+hello
+
+render name=v flags=(w)
+----
+hello
+world
+
