@@ -1,5 +1,23 @@
+Today we're going to build a very simple relational query engine.
+
+We'll start by defining some types:
+
+% relational-types
+
 this is the interface:
 
 % node-interface
 
 isn't it cool?
+
+Let's implement it for a scan:
+
+% scan
+
+now a select:
+
+% select1
+
+we can make this better by pushing filters down:
+
+% push-filter-into-cross
