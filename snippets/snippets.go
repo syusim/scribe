@@ -62,6 +62,31 @@ func Extract(b Block, buf *bytes.Buffer, f FlagSet, tag string) {
 	}
 }
 
+func Tags(b Block) (map[string]struct{}, error) {
+	m := make(map[string]struct{})
+	err := tags(b, m)
+	return m, err
+}
+
+func tags(b Block, m map[string]struct{}) error {
+	switch e := b.(type) {
+	case *pair:
+		if err := tags(e.l, m); err != nil {
+			return err
+		}
+		if err := tags(e.r, m); err != nil {
+			return err
+		}
+	case *fence:
+		if _, ok := m[e.tag]; ok {
+			return fmt.Errorf("duplicate tag: %q", e.tag)
+		}
+		m[e.tag] = struct{}{}
+		return tags(e.contents, m)
+	}
+	return nil
+}
+
 func concat(l, r Block) Block {
 	// We could maybe do this "optimization," if we're going to re-render a tree
 	// a lot. Kind of annoyingly quadratic, though.
@@ -100,12 +125,12 @@ type token struct {
 	lex string
 }
 
-var openRegexp = regexp.MustCompile(`^\s*//\((\w+)\s*$`)
+var openRegexp = regexp.MustCompile(`^\s*//\((\S+)\s*$`)
 
 // These two cases could possibly be combined.
 var closeRegexpAppended = regexp.MustCompile(`^(.*\S)\s*//\)\s*$`)
 var closeRegexp = regexp.MustCompile(`^\s*//\)\s*$`)
-var openAntiRegexp = regexp.MustCompile(`^\s*//\[(\w+)\s*$`)
+var openAntiRegexp = regexp.MustCompile(`^\s*//\[(\S+)\s*$`)
 var closeAntiRegexp = regexp.MustCompile(`^\s*\]\s*$`)
 
 func (t *tokStream) populate() bool {

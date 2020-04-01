@@ -68,6 +68,20 @@ func TestSnippets(t *testing.T) {
 				var buf bytes.Buffer
 				files[name].Render(&buf, flagSet)
 				return buf.String()
+			case "tags":
+				var name string
+				for _, a := range d.CmdArgs {
+					switch a.Key {
+					case "name":
+						name = a.Vals[0]
+					}
+				}
+
+				t, err := Tags(files[name])
+				if err != nil {
+					return fmt.Sprintf("error: %s\n", err)
+				}
+				return fmt.Sprintf("%v\n", t)
 			default:
 				panic("unknown command")
 			}

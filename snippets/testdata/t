@@ -5,6 +5,10 @@ world
 //)
 ----
 
+tags name=t
+----
+map[w:{}]
+
 # Render out the document, `w` is not enabled so it is not rendered.
 render name=t flags=()
 ----
@@ -30,6 +34,10 @@ world!!!
 after
 //)
 ----
+
+tags name=u
+----
+map[v:{} w:{}]
 
 render name=u flags=()
 ----
@@ -79,4 +87,3 @@ render name=v flags=(w)
 ----
 hello
 world
-
