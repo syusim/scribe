@@ -1,4 +1,53 @@
 load name=c
-//(node-interface
+bar
+  foo
+  abc
+//(w
+def
 //)
+
+ghi
+
+baz
+----
+
+extract-ctx name=c section=w
+----
+----
+  foo
+  abc
+++++
+def
+++++
+
+ghi
+----
+----
+
+load name=u
+bar
+  foo
+  abc
+
+//(w
+def
+//)
+
+ghi
+
+baz
+----
+
+extract-ctx name=u section=w
+----
+----
+  foo
+  abc
+
+++++
+def
+++++
+
+ghi
+----
 ----

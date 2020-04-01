@@ -167,7 +167,11 @@ func Build(
 	if err := formatter.WriteCSS(&buf, style); err != nil {
 		return nil, err
 	}
+	buf.WriteString("pre { margin-top: 0; margin-bottom: 0; }")
+	buf.WriteString(".greyout { filter: brightness(50%); }")
 	buf.WriteString("</style>")
+
+	seenFlags := make(snippets.FlagSet)
 
 	for _, tok := range toks {
 		switch tok.kind {
@@ -177,21 +181,49 @@ func Build(
 			)
 		case snippetRefLine:
 			referenced := tok.lex
+			seenFlags[tok.lex] = struct{}{}
 			referencedFile, ok := c.tags[referenced]
 			if !ok {
 				panic(fmt.Sprintf("bad snippet: %q", referenced))
 			}
 			file := c.files[referencedFile]
 			var b bytes.Buffer
-			snippets.Extract(file, &b, nil, referenced)
+			extracted := snippets.ExtractCtx(file, seenFlags, referenced)
+			b.WriteString(extracted.Pre)
+			b.WriteString("++++\n")
+			b.WriteString(extracted.Contents)
+			b.WriteString("++++\n")
+			b.WriteString(extracted.Post)
 			code := unindent(b.String())
+			// TODO: ugh, we need to unindent this properly
+			sections := strings.Split(code, "++++\n")
+			pre, mid, post := sections[0], sections[1], sections[2]
 
-			iterator, err := lexer.Tokenise(nil, code)
+			it, err := lexer.Tokenise(nil, pre)
 			if err != nil {
 				return nil, err
 			}
 
-			err = formatter.Format(&buf, style, iterator)
+			// I'm sure some CSS nerd will tell me this is a bad use of span
+			buf.WriteString(`<span class='greyout'>`)
+			err = formatter.Format(&buf, style, it)
+			buf.WriteString(`</span>`)
+
+			it, err = lexer.Tokenise(nil, mid)
+			if err != nil {
+				return nil, err
+			}
+
+			err = formatter.Format(&buf, style, it)
+
+			it, err = lexer.Tokenise(nil, post)
+			if err != nil {
+				return nil, err
+			}
+
+			buf.WriteString(`<span class='greyout'>`)
+			err = formatter.Format(&buf, style, it)
+			buf.WriteString(`</span>`)
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/justinj/bitwise/datadriven"
 )
 
+// TODO: extract out all the gross duplication of arg parsing
 func TestSnippets(t *testing.T) {
 	datadriven.Walk(t, "testdata", func(t *testing.T, path string) {
 		files := make(map[string]Block)
@@ -33,7 +34,7 @@ func TestSnippets(t *testing.T) {
 				}
 				files[name] = result
 				return ""
-			case "extract":
+			case "extract", "extract-ctx":
 				flagSet := make(FlagSet)
 				var name string
 				var section string
@@ -50,7 +51,17 @@ func TestSnippets(t *testing.T) {
 					}
 				}
 				var buf bytes.Buffer
-				Extract(files[name], &buf, flagSet, section)
+				switch d.Cmd {
+				case "extract":
+					Extract(files[name], &buf, flagSet, section)
+				case "extract-ctx":
+					extracted := ExtractCtx(files[name], flagSet, section)
+					buf.WriteString(extracted.Pre)
+					buf.WriteString("++++\n")
+					buf.WriteString(extracted.Contents)
+					buf.WriteString("++++\n")
+					buf.WriteString(extracted.Post)
+				}
 				return buf.String()
 			case "render":
 				flagSet := make(FlagSet)

@@ -14,6 +14,7 @@ type Relation struct {
 	rows     []Row
 } //)
 
+//(relation.string
 func (t Relation) String() string {
 	widest := make([]int, len(t.colNames))
 
@@ -70,7 +71,7 @@ func (t Relation) String() string {
 	}
 
 	return buf.String()
-}
+} //)
 
 //(node-interface
 type Node interface {
@@ -155,6 +156,7 @@ func Select1(in Node, i int, d string) Node {
 	}
 } //)
 
+//(the-rest
 type select2 struct {
 	input Node
 
@@ -419,3 +421,5 @@ func main() {
 		),
 	)
 }
+
+//)

@@ -37,7 +37,12 @@ func MakeSnippetProcessor(
 				}
 				file := c.files[referencedFile]
 				out.WriteString("```go\n")
-				snippets.Extract(file, &out, nil, referenced)
+				extracted := snippets.ExtractCtx(file, nil /* flagSet */, referenced)
+				out.WriteString(extracted.Pre)
+				out.WriteString("++++\n")
+				out.WriteString(extracted.Contents)
+				out.WriteString("++++\n")
+				out.WriteString(extracted.Post)
 				out.WriteString("```\n")
 			}
 		}

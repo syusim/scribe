@@ -46,6 +46,7 @@ func (b *fence) Render(buf *bytes.Buffer, f FlagSet) {
 	}
 }
 
+// TODO: just make this return a string, that's how it's used now.
 func Extract(b Block, buf *bytes.Buffer, f FlagSet, tag string) {
 	switch e := b.(type) {
 	case *pair:
