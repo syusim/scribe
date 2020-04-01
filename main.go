@@ -22,6 +22,9 @@ func main() {
 	}
 
 	err = filepath.Walk(in, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
 		f, err := os.Open(path)
 		if err != nil {
 			return err
@@ -36,7 +39,9 @@ func main() {
 		newPath := filepath.Join(out, postPath)
 
 		dir, _ := filepath.Split(newPath)
-		os.MkdirAll(dir, 0700)
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return err
+		}
 
 		out, err := os.Create(newPath)
 		if err != nil {
