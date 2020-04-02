@@ -68,7 +68,7 @@ func trimLeft(s string) string {
 		lines[len(lines)-1-i] = revd[i]
 	}
 
-	return strings.Join(lines, "\n")
+	return strings.ReplaceAll(strings.Join(lines, "\n"), "\n\n\n", "\n\n")
 }
 
 func indentationLen(s string) int {

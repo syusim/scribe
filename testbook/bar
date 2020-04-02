@@ -1,4 +1,10 @@
 Today we're going to build a very simple relational query engine.
+Specifically, we're going to do an implementation of the most basic of all query languages,
+the SPC algebra.
+
+ a | b 
+---|---
+ 1 | 2 
 
 We'll start by defining some types:
 

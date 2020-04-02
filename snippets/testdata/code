@@ -51,3 +51,38 @@ def
 ghi
 ----
 ----
+
+load name=code
+package main
+
+//(imports
+import (
+	"bytes"
+	"fmt"
+	"strings"
+) //)
+
+//(relational-types
+type Row []string
+type Relation struct {
+	colNames []string
+	rows     []Row
+} //)
+----
+
+extract-ctx name=code section=relational-types
+----
+----
+package main
+
+
+++++
+type Row []string
+type Relation struct {
+	colNames []string
+	rows     []Row
+}
+++++
+
+----
+----

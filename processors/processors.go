@@ -162,22 +162,56 @@ func Build(
 
 	var buf bytes.Buffer
 
+	buf.WriteString(`<link href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2&display=swap" rel="stylesheet">`)
 	buf.WriteString("<style>")
 	buf.WriteString("html { tab-size: 4; -moz-tab-size: 4; }")
 	if err := formatter.WriteCSS(&buf, style); err != nil {
 		return nil, err
 	}
 	buf.WriteString("pre { margin-top: 0; margin-bottom: 0; }")
-	buf.WriteString(".greyout { filter: brightness(50%); }")
+	buf.WriteString(".greyout { filter: brightness(75%); }")
+	buf.WriteString(`
+body {
+	background-color: #a09090;
+	margin-top: 0px;
+}
+.content {
+	background-color: white;
+	padding: 20px;
+	width:800px;
+	margin-left: auto;
+	margin-right: auto;
+	font-family: 'Baloo Thambi 2';
+	margin-top: 0px;
+}
+.content p {
+	margin-left: 5px;
+}
+pre {
+	margin-top: 0;
+	margin-bottom: 0;
+	border-left: 30px solid #202020;
+	border-right: 30px solid #202020;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+.top-code > pre {
+	padding-top: 10px;
+}
+.bottom-code > pre {
+	padding-bottom: 10px;
+}
+`)
 	buf.WriteString("</style>")
 
+	buf.WriteString(`<div class="content">`)
 	seenFlags := make(snippets.FlagSet)
 
 	for _, tok := range toks {
 		switch tok.kind {
 		case bareLine:
 			buf.Write(
-				blackfriday.MarkdownBasic([]byte(tok.lex)),
+				blackfriday.MarkdownCommon([]byte(tok.lex)),
 			)
 		case snippetRefLine:
 			referenced := tok.lex
@@ -205,7 +239,7 @@ func Build(
 			}
 
 			// I'm sure some CSS nerd will tell me this is a bad use of span
-			buf.WriteString(`<span class='greyout'>`)
+			buf.WriteString(`<span class='greyout top-code'>`)
 			err = formatter.Format(&buf, style, it)
 			buf.WriteString(`</span>`)
 
@@ -221,11 +255,12 @@ func Build(
 				return nil, err
 			}
 
-			buf.WriteString(`<span class='greyout'>`)
+			buf.WriteString(`<span class='greyout bottom-code'>`)
 			err = formatter.Format(&buf, style, it)
 			buf.WriteString(`</span>`)
 		}
 	}
+	buf.WriteString(`</div>`)
 
 	return &buf, nil
 }
