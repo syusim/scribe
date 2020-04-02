@@ -1,20 +1,37 @@
 package main
 
 import (
+	"flag"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 
 	"github.com/justinj/scribe/processors"
 )
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 func main() {
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
+	build()
+}
+
+func build() {
 	in := "testbook/"
 	out := "build/"
 
-	if err := os.RemoveAll(out); err != nil {
-		// If it doesn't exist, that's fine.
-	}
+	os.RemoveAll(out)
 
 	err := filepath.Walk(in, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -47,10 +64,8 @@ func main() {
 
 		return nil
 	})
-	_ = out
 
 	if err != nil {
 		panic(err)
 	}
-
 }
