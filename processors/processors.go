@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"io"
 	"strings"
-	"unicode"
 )
 
 type lineKind int
@@ -52,40 +51,4 @@ func tokenize(in io.Reader) []line {
 	flush()
 
 	return result
-}
-
-func unindent(s string) string {
-	smallestIndent := len(s)
-	lines := strings.Split(s, "\n")
-	for _, l := range lines {
-		if len(l) == 0 {
-			continue
-		}
-		for i := 0; i < len(l); i++ {
-			if !unicode.IsSpace(rune(l[i])) {
-				if smallestIndent > i {
-					smallestIndent = i
-					break
-				}
-			}
-		}
-		if smallestIndent == 0 {
-			return s
-		}
-	}
-
-	var out bytes.Buffer
-	for i, l := range lines {
-		if len(l) <= smallestIndent {
-			// l is probably just a blank line.
-			out.WriteString(l)
-		} else {
-			out.WriteString(l[smallestIndent:])
-		}
-		if i < len(lines)-1 {
-			out.WriteByte('\n')
-		}
-	}
-
-	return out.String()
 }

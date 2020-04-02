@@ -20,6 +20,6 @@ Now a select:
 
 % select1
 
-We can make this better by pushing filters down:
+While we're constructing a `Select` operator, if we spot an optimization, we can apply it on the spot:
 
 % push-filter-into-cross
