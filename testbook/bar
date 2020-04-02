@@ -1,29 +1,25 @@
-Today we're going to build a very simple relational query engine.
-Specifically, we're going to do an implementation of the most basic of all query languages,
-the SPC algebra.
+# Building a Query Engine
 
- a | b 
----|---
- 1 | 2 
+*Note: this is not a serious tutorial, just a kicking-of-the-tires for my site generator.*
 
-We'll start by defining some types:
+Today we're going to build a very simple relational query engine!
+We'll start by defining some types to represent a relational result set:
 
 % relational-types
 
-this is the interface:
+A _volcano node_ is an object representing a relational query.
+We'll represent them with this interface:
 
 % node-interface
-
-isn't it cool?
 
 Let's implement it for a scan:
 
 % scan
 
-now a select:
+Now a select:
 
 % select1
 
-we can make this better by pushing filters down:
+We can make this better by pushing filters down:
 
 % push-filter-into-cross
