@@ -30,17 +30,12 @@ type DocMeta struct {
 	Contents []Section
 }
 
-func ParseDocument(snippetDir, path string) (DocMeta, error) {
-	// TODO: cache the corpus on the Compiler.
-	c, err := buildCorpus(snippetDir)
-	if err != nil {
-		return DocMeta{}, err
-	}
-
+func (c *Compiler) ParseDocument(path string) (DocMeta, error) {
 	in, err := os.Open(path)
 	if err != nil {
 		return DocMeta{}, err
 	}
+	defer in.Close()
 
 	var meta DocMeta
 
@@ -49,12 +44,14 @@ func ParseDocument(snippetDir, path string) (DocMeta, error) {
 	for _, tok := range tokenize(in) {
 		switch tok.kind {
 		case metaLine:
-			json.Unmarshal([]byte(tok.lex), &meta)
+			if err := json.Unmarshal([]byte(tok.lex), &meta); err != nil {
+				return DocMeta{}, err
+			}
 		case bareLine:
 			meta.Contents = append(meta.Contents, Prose{tok.lex})
 		case snippetRefLine:
 			seenFlags[tok.lex] = struct{}{}
-			pre, mid, post := c.getSnip(seenFlags, tok.lex)
+			pre, mid, post := c.corpus.getSnip(seenFlags, tok.lex)
 			meta.Contents = append(meta.Contents, Code{pre, mid, post})
 		}
 	}

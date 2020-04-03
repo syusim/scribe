@@ -27,6 +27,7 @@ func buildCorpus(dir string) (*corpus, error) {
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 		b, err := snippets.New(f)
 		if err != nil {
 			return err

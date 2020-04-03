@@ -13,6 +13,7 @@ type highlighter struct {
 	formatter *html.Formatter
 	lexer     chroma.Lexer
 	style     *chroma.Style
+	cachedCss string
 }
 
 func newHighlighter() *highlighter {
@@ -38,9 +39,12 @@ func (h *highlighter) highlight(out *bytes.Buffer, s string) error {
 }
 
 func (h *highlighter) css() string {
-	var buf bytes.Buffer
-	if err := h.formatter.WriteCSS(&buf, h.style); err != nil {
-		return ""
+	if h.cachedCss == "" {
+		var buf bytes.Buffer
+		if err := h.formatter.WriteCSS(&buf, h.style); err != nil {
+			return ""
+		}
+		h.cachedCss = buf.String()
 	}
-	return buf.String()
+	return h.cachedCss
 }
