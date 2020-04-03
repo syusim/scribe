@@ -1,30 +1,25 @@
 package main
 
 import (
-	"flag"
 	"io"
-	"log"
+	"net/http"
 	"os"
 	"path/filepath"
-	"runtime/pprof"
 
 	"github.com/justinj/scribe/processors"
 )
 
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
-
 func main() {
-	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	}
-
 	build()
+
+	fs := http.FileServer(http.Dir("./build"))
+	http.Handle("/", fs)
+
+	// log.Println("Listening on :3000...")
+	// err := http.ListenAndServe(":3000", nil)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }
 
 func build() {

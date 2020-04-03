@@ -13,6 +13,7 @@ const (
 	_ lineKind = iota
 	bareLine
 	snippetRefLine
+	metaLine
 )
 
 type line struct {
@@ -37,7 +38,20 @@ func tokenize(in io.Reader) []line {
 	}
 
 	for l, err := r.ReadString('\n'); err == nil; l, err = r.ReadString('\n') {
-		if strings.HasPrefix(l, "% ") {
+		if l == "---\n" {
+			flush()
+			var meta bytes.Buffer
+			for l, err := r.ReadString('\n'); err == nil; l, err = r.ReadString('\n') {
+				if l == "---\n" {
+					break
+				}
+				meta.WriteString(l)
+			}
+			result = append(result, line{
+				kind: metaLine,
+				lex:  meta.String(),
+			})
+		} else if strings.HasPrefix(l, "% ") {
 			flush()
 			result = append(result, line{
 				kind: snippetRefLine,
@@ -49,6 +63,5 @@ func tokenize(in io.Reader) []line {
 	}
 
 	flush()
-
 	return result
 }

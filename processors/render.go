@@ -2,6 +2,7 @@ package processors
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -17,6 +18,10 @@ func span(buf *bytes.Buffer, classes string, f func()) {
 	buf.WriteString(`</span>`)
 }
 
+type docMeta struct {
+	Title string
+}
+
 func Build(
 	in io.Reader,
 	snippetDir string,
@@ -26,6 +31,8 @@ func Build(
 		return nil, err
 	}
 
+	var meta docMeta
+
 	h := newHighlighter()
 
 	seenFlags := make(snippets.FlagSet)
@@ -34,6 +41,8 @@ func Build(
 
 	for _, tok := range tokenize(in) {
 		switch tok.kind {
+		case metaLine:
+			json.Unmarshal([]byte(tok.lex), &meta)
 		case bareLine:
 			buf.Write(
 				blackfriday.MarkdownCommon([]byte(tok.lex)),
