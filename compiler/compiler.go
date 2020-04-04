@@ -124,6 +124,8 @@ func (c *Compiler) pageHTML(d DocMeta) string {
 			span(&buf, "greyout bottom-code", func() {
 				c.h.highlight(&buf, s.Post)
 			})
+		case Error:
+			fmt.Fprintf(&buf, `<div class="error"><div class="head">Error:</div>%s</div>`, s.Msg)
 		}
 	}
 

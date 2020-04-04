@@ -54,13 +54,13 @@ func buildCorpus(dir string) (*corpus, error) {
 	return c, nil
 }
 
-func (c *corpus) getSnip(seenFlags snippets.FlagSet, name string) (pre, mid, post string) {
+func (c *corpus) getSnip(seenFlags snippets.FlagSet, name string) (pre, mid, post string, ok bool) {
 	referencedFile, ok := c.tags[name]
 	if !ok {
-		panic(fmt.Sprintf("bad snippet: %q", name))
+		return "", "", "", false
 	}
 	file := c.files[referencedFile]
 	// TODO: unindent stuff?
 	extracted := snippets.ExtractCtx(file, seenFlags, name)
-	return extracted.Pre, extracted.Contents, extracted.Post
+	return extracted.Pre, extracted.Contents, extracted.Post, true
 }

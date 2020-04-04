@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -22,6 +23,10 @@ type Code struct {
 	Pre  string
 	Code string
 	Post string
+}
+
+type Error struct {
+	Msg string
 }
 
 type DocMeta struct {
@@ -51,8 +56,12 @@ func (c *Compiler) ParseDocument(path string) (DocMeta, error) {
 			meta.Contents = append(meta.Contents, Prose{tok.lex})
 		case snippetRefLine:
 			seenFlags[tok.lex] = struct{}{}
-			pre, mid, post := c.corpus.getSnip(seenFlags, tok.lex)
-			meta.Contents = append(meta.Contents, Code{pre, mid, post})
+			pre, mid, post, ok := c.corpus.getSnip(seenFlags, tok.lex)
+			if ok {
+				meta.Contents = append(meta.Contents, Code{pre, mid, post})
+			} else {
+				meta.Contents = append(meta.Contents, Error{fmt.Sprintf("Snippet not found: %q", tok.lex)})
+			}
 		}
 	}
 	return meta, nil

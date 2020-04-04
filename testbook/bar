@@ -13,6 +13,9 @@ We'll start by defining some types to represent a relational result set:
 % relational-types
 
 A _volcano node_ is an object representing a relational query.
+
+% wahhh
+
 We'll represent them with this interface:
 
 % node-interface
