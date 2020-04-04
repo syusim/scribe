@@ -75,7 +75,6 @@ extract-ctx name=code section=relational-types
 ----
 package main
 
-
 ++++
 type Row []string
 type Relation struct {
