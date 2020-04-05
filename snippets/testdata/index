@@ -1,0 +1,25 @@
+load name=t
+//(a
+d := make([]opt.Row, len(data.Rows))
+copy(d, data.Rows) //)
+
+//(b
+sort.Slice(d, func(i, j int) bool {
+  return compare(d[i], d[j], order) == lt
+}) //)
+
+foo
+----
+
+extract-ctx name=t section=a
+----
+----
+++++
+d := make([]opt.Row, len(data.Rows))
+copy(d, data.Rows)
+++++
+
+
+foo
+----
+----

@@ -114,16 +114,20 @@ func (c *Compiler) pageHTML(d DocMeta) string {
 				blackfriday.MarkdownCommon([]byte(s.Contents)),
 			)
 		case Code:
-			// I'm sure some CSS nerd will tell me this is a bad use of span
-			span(&buf, "greyout top-code", func() {
-				c.h.highlight(&buf, s.Pre)
-			})
+			if s.Pre != "" {
+				// I'm sure some CSS nerd will tell me this is a bad use of span
+				span(&buf, "greyout top-code", func() {
+					c.h.highlight(&buf, s.Pre)
+				})
+			}
 
 			c.h.highlight(&buf, s.Code)
 
-			span(&buf, "greyout bottom-code", func() {
-				c.h.highlight(&buf, s.Post)
-			})
+			if s.Post != "" {
+				span(&buf, "greyout bottom-code", func() {
+					c.h.highlight(&buf, s.Post)
+				})
+			}
 		case Error:
 			fmt.Fprintf(&buf, `<div class="error"><div class="head">Error:</div>%s</div>`, s.Msg)
 		}

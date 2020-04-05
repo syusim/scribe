@@ -1,4 +1,4 @@
-package main
+package opt
 
 //(imports
 import (
@@ -7,26 +7,19 @@ import (
 	"strings"
 ) //)
 
-//(relational-types
-type Row []string
-type Relation struct {
-	colNames []string
-	rows     []Row
-} //)
-
 //(relation.string
 func (t Relation) String() string {
-	widest := make([]int, len(t.colNames))
+	widest := make([]int, len(t.ColNames))
 
-	for i, n := range t.colNames {
+	for i, n := range t.ColNames {
 		if widest[i] < len(n) {
 			widest[i] = len(n)
 		}
 	}
 
-	for i := range t.rows {
-		for j := range t.rows[i] {
-			l := len(t.rows[i][j])
+	for i := range t.Rows {
+		for j := range t.Rows[i] {
+			l := len(t.Rows[i][j])
 			if widest[j] < l {
 				widest[j] = l
 			}
@@ -34,7 +27,7 @@ func (t Relation) String() string {
 	}
 
 	var buf bytes.Buffer
-	for i, n := range t.colNames {
+	for i, n := range t.ColNames {
 		if i > 0 {
 			buf.WriteString(" | ")
 		}
@@ -56,9 +49,9 @@ func (t Relation) String() string {
 		}
 	}
 	buf.WriteByte('\n')
-	for i := range t.rows {
-		for j := range t.rows[i] {
-			d := t.rows[i][j]
+	for i := range t.Rows {
+		for j := range t.Rows[i] {
+			d := t.Rows[i][j]
 			if j > 0 {
 				buf.WriteString(" | ")
 			}
@@ -95,11 +88,11 @@ type scan struct {
 func (s *scan) Start() {}
 
 func (s *scan) Next() (Row, bool) {
-	if s.idx >= len(s.rel.rows) {
+	if s.idx >= len(s.rel.Rows) {
 		return nil, false
 	}
 	s.idx++
-	return s.rel.rows[s.idx-1], true
+	return s.rel.Rows[s.idx-1], true
 }
 
 func Scan(r Relation) Node {
@@ -278,7 +271,7 @@ func Cross(l, r Node) Node {
 func cols(n Node) []string {
 	switch e := n.(type) {
 	case *scan:
-		return e.rel.colNames
+		return e.rel.ColNames
 	case *select1:
 		return cols(e.input)
 	case *select2:
@@ -308,8 +301,8 @@ func spool(n Node) Relation {
 		result = append(result, next)
 	}
 	return Relation{
-		colNames: cols(n),
-		rows:     result,
+		ColNames: cols(n),
+		Rows:     result,
 	}
 }
 
@@ -382,8 +375,8 @@ func Explain(n Node) string {
 
 func main() {
 	r := Relation{
-		colNames: []string{"name", "from", "resides"},
-		rows: []Row{
+		ColNames: []string{"name", "from", "resides"},
+		Rows: []Row{
 			{"Jordan", "New York", "New York"},
 			{"Lauren", "California", "New York"},
 			{"Justin", "Ontario", "New York"},
@@ -393,8 +386,8 @@ func main() {
 	}
 
 	c := Relation{
-		colNames: []string{"location", "country"},
-		rows: []Row{
+		ColNames: []string{"location", "country"},
+		Rows: []Row{
 			{"New York", "United States"},
 			{"California", "United States"},
 			{"Ontario", "Canada"},

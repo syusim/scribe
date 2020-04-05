@@ -1,0 +1,44 @@
+---
+{
+  "title": "Implementing an Index"
+}
+---
+
+Up until now, we've been satisfied to implement our scans
+by reading over all the data in a table.
+
+This is OK for our toy examples, but we can do better in cases where we only care about a small number of records in a table.
+
+Our constructor will need to take the data, plus the set of columns to order on.
+
+% index.header
+
+We then need to make our own internal copy of the data.
+
+% index.make-a-copy
+
+Then we sort it according to the ordering we care about.
+
+% index.sort-it
+
+And then return the result.
+
+% index.closer
+
+We need a way to read portions of the data.
+A common abstraction for this is an "iterator," which is a handle onto the index at a particular location.
+
+Our iterator will be very simple, just a handle onto the data and an index:
+
+% index.iterator-def
+
+We'll implement the `SeekGE` method on an index to give an iterator to the first row
+that's greater than or equal to our point.
+
+% index.seekge
+
+We can speed this up by replacing the linear seek with a binary search:
+
+% index.seekge-binsearch
+
+Ok!

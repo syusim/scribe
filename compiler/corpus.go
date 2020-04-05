@@ -13,6 +13,39 @@ type corpus struct {
 	tags  map[string]string
 }
 
+func newCorpus() *corpus {
+	return &corpus{
+		files: make(map[string]snippets.Block),
+		tags:  make(map[string]string),
+	}
+}
+
+func (c *corpus) add(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	b, err := snippets.New(f)
+	if err != nil {
+		return err
+	}
+	tags, err := snippets.Tags(b)
+	if err != nil {
+		return err
+	}
+
+	c.files[path] = b
+	for tag, _ := range tags {
+		if _, ok := c.tags[tag]; ok {
+			return fmt.Errorf("duplicate tag: %q", tag)
+		}
+		c.tags[tag] = path
+	}
+
+	return nil
+}
+
 func buildCorpus(dir string) (*corpus, error) {
 	c := &corpus{
 		files: make(map[string]snippets.Block),

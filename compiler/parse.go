@@ -57,6 +57,12 @@ func (c *Compiler) ParseDocument(path string) (DocMeta, error) {
 		case snippetRefLine:
 			seenFlags[tok.lex] = struct{}{}
 			pre, mid, post, ok := c.corpus.getSnip(seenFlags, tok.lex)
+			for _, o := range tok.opts {
+				if o == "no-ctx" {
+					pre = ""
+					post = ""
+				}
+			}
 			if ok {
 				meta.Contents = append(meta.Contents, Code{pre, mid, post})
 			} else {
@@ -79,6 +85,7 @@ const (
 type line struct {
 	kind lineKind
 	lex  string
+	opts []string
 }
 
 func tokenize(in io.Reader) []line {
@@ -113,9 +120,23 @@ func tokenize(in io.Reader) []line {
 			})
 		} else if strings.HasPrefix(l, "% ") {
 			flush()
+			var opts []string
+			res := strings.Split(strings.TrimSpace(l[2:]), " ")
+			for len(res) > 1 {
+				switch res[0] {
+				case "no-ctx":
+					opts = append(opts, res[0])
+				case "":
+				default:
+					// TODO: make this an error
+					panic(fmt.Sprintf("bad option: %q", res[0]))
+				}
+				res = res[1:]
+			}
 			result = append(result, line{
 				kind: snippetRefLine,
-				lex:  strings.Trim(l[2:], " \n"),
+				lex:  res[0],
+				opts: opts,
 			})
 		} else {
 			buf.WriteString(l)

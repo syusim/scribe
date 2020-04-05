@@ -262,7 +262,9 @@ func build(in *tokStream) (Block, error) {
 			result = concat(result, n)
 			r, _ := in.Peek()
 			if r.k == closer(tok.k) {
-				in.level--
+				if r.k == endAntiBlockKind {
+					in.level--
+				}
 				// Skip over it.
 				_, _ = in.Next()
 				return &fence{
