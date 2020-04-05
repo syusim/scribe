@@ -150,6 +150,5 @@ func tokenize(in io.Reader) []line {
 
 	flush()
 
-	fmt.Println(result)
 	return result
 }

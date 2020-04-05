@@ -72,7 +72,7 @@ func New(data opt.Relation, order []opt.ColOrdinal) *index { //)
 func (idx *index) SeekGE(key opt.Row) *iterator {
 	//[index.seekge-slow
 	//start := 0
-	//for compareKey(idx.data[start], key, idx.orderBy) == lt {
+	//for start < len(idx.data) && compareKey(idx.data[start], key, idx.orderBy) == lt {
 	//	start++
 	//}
 	//]
