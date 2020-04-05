@@ -83,32 +83,37 @@ const (
 )
 
 type line struct {
-	kind lineKind
-	lex  string
-	opts []string
+	kind    lineKind
+	lex     string
+	opts    []string
+	lineNum int
 }
 
 func tokenize(in io.Reader) []line {
 	result := make([]line, 0)
 	r := bufio.NewReader(in)
 
+	lnum := -1
 	var buf bytes.Buffer
 
 	flush := func() {
 		if buf.Len() > 0 {
 			result = append(result, line{
-				kind: bareLine,
-				lex:  buf.String(),
+				kind:    bareLine,
+				lex:     buf.String(),
+				lineNum: lnum,
 			})
 			buf.Reset()
 		}
 	}
 
 	for l, err := r.ReadString('\n'); err == nil; l, err = r.ReadString('\n') {
+		lnum++
 		if l == "---\n" {
 			flush()
 			var meta bytes.Buffer
 			for l, err := r.ReadString('\n'); err == nil; l, err = r.ReadString('\n') {
+				lnum++
 				if l == "---\n" {
 					break
 				}
@@ -144,5 +149,7 @@ func tokenize(in io.Reader) []line {
 	}
 
 	flush()
+
+	fmt.Println(result)
 	return result
 }
