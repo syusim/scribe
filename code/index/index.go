@@ -38,7 +38,7 @@ func compare(a, b opt.Row, orderBy order) cmpResult {
 	return eq
 }
 
-func compareKey(a, key opt.Row, orderBy order) cmpResult {
+func compareKey(a opt.Row, key opt.Key, orderBy order) cmpResult {
 	for i, idx := range orderBy {
 		if a[idx] < key[i] {
 			return lt
@@ -69,7 +69,7 @@ func New(data opt.Relation, order []opt.ColOrdinal) *index { //)
 } //)
 
 //(index.seekge
-func (idx *index) SeekGE(key opt.Row) *iterator {
+func (idx *index) SeekGE(key opt.Key) *iterator {
 	//[index.seekge-slow
 	//start := 0
 	//for start < len(idx.data) && compareKey(idx.data[start], key, idx.orderBy) == lt {
@@ -79,9 +79,7 @@ func (idx *index) SeekGE(key opt.Row) *iterator {
 	//(index.seekge-binsearch
 	start := sort.Search(len(idx.data), func(i int) bool {
 		return compareKey(idx.data[i], key, idx.orderBy) != lt
-	})
-
-	//)
+	}) //)
 
 	return &iterator{
 		index: idx,

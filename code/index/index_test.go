@@ -27,7 +27,7 @@ func TestScan(t *testing.T) {
 		[]opt.ColOrdinal{1},
 	)
 
-	it := idx.SeekGE(opt.Row{"y"})
+	it := idx.SeekGE(opt.Key{"y"})
 
 	res := spool(it)
 	if !reflect.DeepEqual(res, []opt.Row{{"c", "y"}, {"b", "z"}}) {

@@ -1,70 +1,13 @@
-package opt
+package exec
 
 //(imports
 import (
 	"bytes"
 	"fmt"
 	"strings"
+
+	"github.com/justinj/scribe/code/opt"
 ) //)
-
-//(relation.string
-func (t Relation) String() string {
-	widest := make([]int, len(t.ColNames))
-
-	for i, n := range t.ColNames {
-		if widest[i] < len(n) {
-			widest[i] = len(n)
-		}
-	}
-
-	for i := range t.Rows {
-		for j := range t.Rows[i] {
-			l := len(t.Rows[i][j])
-			if widest[j] < l {
-				widest[j] = l
-			}
-		}
-	}
-
-	var buf bytes.Buffer
-	for i, n := range t.ColNames {
-		if i > 0 {
-			buf.WriteString(" | ")
-		}
-		for k := 0; k < (widest[i]-len(n))/2; k++ {
-			buf.WriteByte(' ')
-		}
-		buf.WriteString(n)
-		for k := 0; k < (widest[i]-len(n))/2; k++ {
-			buf.WriteByte(' ')
-		}
-	}
-	buf.WriteByte('\n')
-	for i := range widest {
-		if i > 0 {
-			buf.WriteString("-+-")
-		}
-		for j := 0; j < widest[i]; j++ {
-			buf.WriteByte('-')
-		}
-	}
-	buf.WriteByte('\n')
-	for i := range t.Rows {
-		for j := range t.Rows[i] {
-			d := t.Rows[i][j]
-			if j > 0 {
-				buf.WriteString(" | ")
-			}
-			buf.WriteString(d)
-			for k := 0; k < widest[j]-len(d); k++ {
-				buf.WriteByte(' ')
-			}
-		}
-		buf.WriteByte('\n')
-	}
-
-	return buf.String()
-} //)
 
 //(node-interface
 type Node interface {
@@ -74,12 +17,12 @@ type Node interface {
 	// Next returns the next row in the Node's result set. If there are no more
 	// rows to return, the second return value will be false, otherwise, it will
 	// be true.
-	Next() (Row, bool)
+	Next() (opt.Row, bool)
 } //)
 
 //(scan
 type scan struct {
-	rel Relation
+	rel opt.Relation
 
 	// idx is the next row to output from the relation.
 	idx int
@@ -87,7 +30,7 @@ type scan struct {
 
 func (s *scan) Start() {}
 
-func (s *scan) Next() (Row, bool) {
+func (s *scan) Next() (opt.Row, bool) {
 	if s.idx >= len(s.rel.Rows) {
 		return nil, false
 	}
@@ -95,7 +38,7 @@ func (s *scan) Next() (Row, bool) {
 	return s.rel.Rows[s.idx-1], true
 }
 
-func Scan(r Relation) Node {
+func Scan(r opt.Relation) Node {
 	return &scan{
 		idx: 0,
 		rel: r,
@@ -113,7 +56,7 @@ func (s *select1) Start() {
 	s.input.Start()
 }
 
-func (s *select1) Next() (Row, bool) {
+func (s *select1) Next() (opt.Row, bool) {
 	next, ok := s.input.Next()
 	for ok && next[s.i] != s.d {
 		next, ok = s.input.Next()
@@ -161,7 +104,7 @@ func (s *select2) Start() {
 	s.input.Start()
 }
 
-func (s *select2) Next() (Row, bool) {
+func (s *select2) Next() (opt.Row, bool) {
 	next, ok := s.input.Next()
 	for ok && next[s.i] != next[s.j] {
 		next, ok = s.input.Next()
@@ -186,12 +129,12 @@ func (p *project) Start() {
 	p.input.Start()
 }
 
-func (p *project) Next() (Row, bool) {
+func (p *project) Next() (opt.Row, bool) {
 	next, ok := p.input.Next()
 	if !ok {
 		return nil, false
 	}
-	out := make(Row, len(p.idxs))
+	out := make(opt.Row, len(p.idxs))
 	for i := range p.idxs {
 		out[i] = next[p.idxs[i]]
 	}
@@ -209,8 +152,8 @@ type cross struct {
 	l Node
 	r Node
 
-	leftRows []Row
-	rightRow Row
+	leftRows []opt.Row
+	rightRow opt.Row
 	leftIdx  int
 	done     bool
 }
@@ -237,7 +180,7 @@ func (c *cross) Start() {
 	}
 }
 
-func (c *cross) Next() (Row, bool) {
+func (c *cross) Next() (opt.Row, bool) {
 	if c.done {
 		return nil, false
 	}
@@ -253,7 +196,7 @@ func (c *cross) Next() (Row, bool) {
 		}
 	}
 
-	result := make(Row, 0, len(c.leftRows[c.leftIdx])+len(c.rightRow))
+	result := make(opt.Row, 0, len(c.leftRows[c.leftIdx])+len(c.rightRow))
 	result = append(result, c.leftRows[c.leftIdx]...)
 	result = append(result, c.rightRow...)
 	c.leftIdx++
@@ -294,13 +237,13 @@ func cols(n Node) []string {
 	panic("unhandled")
 }
 
-func spool(n Node) Relation {
+func spool(n Node) opt.Relation {
 	n.Start()
-	result := make([]Row, 0)
+	result := make([]opt.Row, 0)
 	for next, ok := n.Next(); ok; next, ok = n.Next() {
 		result = append(result, next)
 	}
-	return Relation{
+	return opt.Relation{
 		ColNames: cols(n),
 		Rows:     result,
 	}
@@ -374,9 +317,9 @@ func Explain(n Node) string {
 }
 
 func main() {
-	r := Relation{
+	r := opt.Relation{
 		ColNames: []string{"name", "from", "resides"},
-		Rows: []Row{
+		Rows: []opt.Row{
 			{"Jordan", "New York", "New York"},
 			{"Lauren", "California", "New York"},
 			{"Justin", "Ontario", "New York"},
@@ -385,9 +328,9 @@ func main() {
 		},
 	}
 
-	c := Relation{
+	c := opt.Relation{
 		ColNames: []string{"location", "country"},
-		Rows: []Row{
+		Rows: []opt.Row{
 			{"New York", "United States"},
 			{"California", "United States"},
 			{"Ontario", "Canada"},

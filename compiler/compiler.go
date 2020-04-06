@@ -121,11 +121,15 @@ func (c *Compiler) pageHTML(d DocMeta) string {
 				})
 			}
 
-			c.h.highlight(&buf, s.Code)
+			span(&buf, "mid-code", func() {
+				c.h.highlight(&buf, s.Code)
+			})
 
 			if s.Post != "" {
 				span(&buf, "greyout bottom-code", func() {
-					c.h.highlight(&buf, s.Post)
+					// Adding this leading space stops chroma from discarding leading
+					// newlines for some reason.
+					c.h.highlight(&buf, " "+s.Post)
 				})
 			}
 		case Error:
@@ -165,18 +169,6 @@ func (c *Compiler) buildDoc(d document) error {
 		return err
 	}(); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (c *Compiler) Build() error {
-	os.RemoveAll(c.outDir)
-
-	for _, d := range c.documents {
-		if err := c.buildDoc(d); err != nil {
-			return err
-		}
 	}
 
 	return nil

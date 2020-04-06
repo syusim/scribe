@@ -34,3 +34,38 @@ render name=u flags=(w)
 if foo == bar {
   fmt.Println("world")
 }
+
+load name=ws
+//(a
+func (idx *index) SeekGE(key opt.Row) *iterator {
+	//[b
+	//start := 0
+	//for start < len(idx.data) && compareKey(idx.data[start], key, idx.orderBy) == lt {
+	//	start++
+	//}
+	//]
+	//(c
+	start := sort.Search(len(idx.data), func(i int) bool {
+		return compareKey(idx.data[i], key, idx.orderBy) != lt
+	}) //)
+
+	return &iterator{
+		index: idx,
+		pos:   start,
+	}
+} //)
+----
+
+extract-ctx name=ws section=c flags=a
+----
+----
+func (idx *index) SeekGE(key opt.Row) *iterator {
+++++
+	start := sort.Search(len(idx.data), func(i int) bool {
+		return compareKey(idx.data[i], key, idx.orderBy) != lt
+	})
+++++
+
+	return &iterator{
+----
+----

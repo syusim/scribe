@@ -93,7 +93,6 @@ func (c *corpus) getSnip(seenFlags snippets.FlagSet, name string) (pre, mid, pos
 		return "", "", "", false
 	}
 	file := c.files[referencedFile]
-	// TODO: unindent stuff?
 	extracted := snippets.ExtractCtx(file, seenFlags, name)
 	return extracted.Pre, extracted.Contents, extracted.Post, true
 }
