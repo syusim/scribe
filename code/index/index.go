@@ -1,4 +1,4 @@
-package main
+package index
 
 import (
 	"sort"
@@ -8,14 +8,14 @@ import (
 
 type order []opt.ColOrdinal
 
-type index struct {
+type T struct {
 	data    []opt.Row
 	orderBy order
 }
 
 //(index.iterator-def
-type iterator struct {
-	index *index
+type Iterator struct {
+	index *T
 	pos   int
 } //)
 
@@ -50,7 +50,7 @@ func compareKey(a opt.Row, key opt.Key, orderBy order) cmpResult {
 }
 
 //(index.header
-func New(data opt.Relation, order []opt.ColOrdinal) *index { //)
+func New(data opt.Relation, order []opt.ColOrdinal) *T { //)
 	//(index.make-a-copy
 	d := make([]opt.Row, len(data.Rows))
 	copy(d, data.Rows)
@@ -62,14 +62,14 @@ func New(data opt.Relation, order []opt.ColOrdinal) *index { //)
 	}) //)
 
 	//(index.closer
-	return &index{
+	return &T{
 		data:    d,
 		orderBy: order,
 	}
 } //)
 
 //(index.seekge
-func (idx *index) SeekGE(key opt.Key) *iterator {
+func (idx *T) SeekGE(key opt.Key) *Iterator {
 	//[index.seekge-slow
 	//start := 0
 	//for start < len(idx.data) && compareKey(idx.data[start], key, idx.orderBy) == lt {
@@ -81,19 +81,28 @@ func (idx *index) SeekGE(key opt.Key) *iterator {
 		return compareKey(idx.data[i], key, idx.orderBy) != lt
 	}) //)
 
-	return &iterator{
+	return &Iterator{
 		index: idx,
 		pos:   start,
 	}
 } //)
 
 //(index.it.next
-func (it *iterator) Next() (opt.Row, bool) {
-	s := it.index.data
-	if it.pos >= len(s) {
+func (it *Iterator) Next() (opt.Row, bool) {
+	if it.pos >= len(it.index.data) {
 		return nil, false
 	}
 	it.pos++
 
 	return it.index.data[it.pos-1], true
+} //)
+
+//(index.it.prev
+func (it *Iterator) Prev() (opt.Row, bool) {
+	if it.pos <= 1 {
+		return nil, false
+	}
+	it.pos--
+
+	return it.index.data[it.pos], true
 } //)

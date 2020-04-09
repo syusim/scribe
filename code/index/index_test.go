@@ -1,4 +1,4 @@
-package main
+package index
 
 import (
 	"reflect"
@@ -7,7 +7,7 @@ import (
 	"github.com/justinj/scribe/code/opt"
 )
 
-func spool(it *iterator) []opt.Row {
+func spool(it *Iterator) []opt.Row {
 	result := make([]opt.Row, 0)
 	for r, ok := it.Next(); ok; r, ok = it.Next() {
 		result = append(result, r)
