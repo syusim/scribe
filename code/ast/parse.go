@@ -196,37 +196,37 @@ func ParseStatement(s string) (Statement, error) {
 	return parseStatement(t)
 }
 
-func parseType(s sexp.Sexp) (Type, error) {
+func parseType(s sexp.Sexp) (lang.Type, error) {
 	n, ok := s.(sexp.Atom)
 	if !ok {
-		return Type{}, fmt.Errorf("expected atom, got %s", s)
+		return 0, fmt.Errorf("expected atom, got %s", s)
 	}
 	switch string(n) {
 	case "int":
-		return Type{lang.Int}, nil
+		return lang.Int, nil
 	case "string":
-		return Type{lang.String}, nil
+		return lang.String, nil
 	case "bool":
-		return Type{lang.Bool}, nil
+		return lang.Bool, nil
 	default:
-		return Type{}, fmt.Errorf("invalid type %q", n)
+		return 0, fmt.Errorf("invalid type %q", n)
 	}
 }
 
-func parseColumnDef(s sexp.Sexp) (ColumnDef, error) {
+func parseColumnDef(s sexp.Sexp) (lang.Column, error) {
 	l, ok := s.(sexp.List)
 	if !ok || len(l) != 2 {
-		return ColumnDef{}, fmt.Errorf("expected column def, got %s", s)
+		return lang.Column{}, fmt.Errorf("expected column def, got %s", s)
 	}
 	name, ok := l[0].(sexp.Atom)
 	if !ok {
-		return ColumnDef{}, fmt.Errorf("expected column name, got %s", l[0])
+		return lang.Column{}, fmt.Errorf("expected column name, got %s", l[0])
 	}
 	typ, err := parseType(l[1])
 	if err != nil {
-		return ColumnDef{}, err
+		return lang.Column{}, err
 	}
-	return ColumnDef{string(name), typ}, nil
+	return lang.Column{string(name), typ}, nil
 }
 
 func parseDatum(s sexp.Sexp) (Datum, error) {
@@ -304,7 +304,7 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 			return nil, fmt.Errorf("expected list of cols, got %s", l[2])
 		}
 
-		defs := make([]ColumnDef, len(cols))
+		defs := make([]lang.Column, len(cols))
 		for i, c := range cols {
 			def, err := parseColumnDef(c)
 			if err != nil {

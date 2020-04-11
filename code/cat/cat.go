@@ -4,13 +4,9 @@ import (
 	"fmt"
 
 	"github.com/justinj/scribe/code/index"
+	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 )
-
-type Column struct {
-	Name string
-	Type opt.Type
-}
 
 type Index struct {
 	name     string
@@ -24,7 +20,7 @@ func (i *Index) Scan(key opt.Key) *index.Iterator {
 
 type Table struct {
 	Name    string
-	cols    []Column
+	cols    []lang.Column
 	indexes []Index
 }
 
@@ -32,7 +28,7 @@ func (t *Table) ColumnCount() int {
 	return len(t.cols)
 }
 
-func (t *Table) Column(i int) *Column {
+func (t *Table) Column(i int) *lang.Column {
 	return &t.cols[i]
 }
 
@@ -62,8 +58,8 @@ func New() *Catalog {
 
 func (c *Catalog) AddTable(
 	name string,
-	cols []Column,
-	data opt.Relation,
+	cols []lang.Column,
+	data []opt.Row,
 	// TODO: have a way for these to have names.
 	indexes [][]opt.ColOrdinal,
 ) {

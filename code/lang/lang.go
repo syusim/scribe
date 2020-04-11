@@ -1,6 +1,7 @@
 package lang
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -12,6 +13,30 @@ const (
 	String
 	Bool
 )
+
+func (t Type) Format(buf *bytes.Buffer) {
+	switch t {
+	case Int:
+		buf.WriteString("int")
+	case String:
+		buf.WriteString("string")
+	case Bool:
+		buf.WriteString("bool")
+	}
+}
+
+type Column struct {
+	Name string
+	Type Type
+}
+
+func (c *Column) Format(buf *bytes.Buffer) {
+	buf.WriteByte('[')
+	buf.WriteString(c.Name)
+	buf.WriteByte(' ')
+	c.Type.Format(buf)
+	buf.WriteByte(']')
+}
 
 type Func int
 

@@ -21,34 +21,6 @@ func (r *RunQuery) Format(buf *bytes.Buffer) {
 	buf.WriteByte(')')
 }
 
-type Type struct {
-	t lang.Type
-}
-
-func (t *Type) Format(buf *bytes.Buffer) {
-	switch t.t {
-	case lang.Int:
-		buf.WriteString("int")
-	case lang.String:
-		buf.WriteString("string")
-	case lang.Bool:
-		buf.WriteString("bool")
-	}
-}
-
-type ColumnDef struct {
-	Name string
-	Type Type
-}
-
-func (c *ColumnDef) Format(buf *bytes.Buffer) {
-	buf.WriteByte('[')
-	buf.WriteString(c.Name)
-	buf.WriteByte(' ')
-	c.Type.Format(buf)
-	buf.WriteByte(']')
-}
-
 // TODO: we should maybe just use straight up lang.Datums
 // everywhere.
 type Datum struct {
@@ -85,7 +57,7 @@ func (r Row) Format(buf *bytes.Buffer) {
 
 type CreateTable struct {
 	Name    string
-	Columns []ColumnDef
+	Columns []lang.Column
 	Data    []Row
 }
 

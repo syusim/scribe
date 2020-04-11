@@ -1,0 +1,11 @@
+exec
+(create-table foo
+  [[x int]]
+  [[1]])
+----
+ok
+
+exec
+(run foo)
+----
+error: unhandled statement *ast.RunQuery

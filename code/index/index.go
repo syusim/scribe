@@ -50,10 +50,10 @@ func compareKey(a opt.Row, key opt.Key, orderBy order) cmpResult {
 }
 
 //(index.header
-func New(data opt.Relation, order []opt.ColOrdinal) *T { //)
+func New(data []opt.Row, order []opt.ColOrdinal) *T { //)
 	//(index.make-a-copy
-	d := make([]opt.Row, len(data.Rows))
-	copy(d, data.Rows)
+	d := make([]opt.Row, len(data))
+	copy(d, data)
 	//)
 
 	//(index.sort-it
