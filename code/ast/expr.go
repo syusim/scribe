@@ -8,7 +8,7 @@ import (
 )
 
 type Expr interface {
-	Node
+	Format(buf *bytes.Buffer)
 }
 
 func ExprStr(e Expr) string {

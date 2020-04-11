@@ -4,7 +4,7 @@ import (
 	"bytes"
 )
 
-type Node interface {
+type RelExpr interface {
 	Format(buf *bytes.Buffer)
 }
 
@@ -17,8 +17,8 @@ func (t *TableRef) Format(buf *bytes.Buffer) {
 }
 
 type Join struct {
-	Left  Node
-	Right Node
+	Left  RelExpr
+	Right RelExpr
 	On    Expr
 }
 
@@ -29,5 +29,42 @@ func (j *Join) Format(buf *bytes.Buffer) {
 	j.Right.Format(buf)
 	buf.WriteByte(' ')
 	j.On.Format(buf)
+	buf.WriteString(")")
+}
+
+type Select struct {
+	Input     RelExpr
+	Predicate Expr
+}
+
+func (s *Select) Format(buf *bytes.Buffer) {
+	buf.WriteString("(select ")
+	s.Input.Format(buf)
+	buf.WriteByte(' ')
+	s.Predicate.Format(buf)
+	buf.WriteString(")")
+}
+
+type As struct {
+	Input    RelExpr
+	Name     string
+	ColNames []string
+}
+
+func (a *As) Format(buf *bytes.Buffer) {
+	buf.WriteString("(as ")
+	a.Input.Format(buf)
+	buf.WriteByte(' ')
+	buf.WriteString(a.Name)
+	if a.ColNames != nil {
+		buf.WriteString(" [")
+		for i, n := range a.ColNames {
+			if i > 0 {
+				buf.WriteByte(' ')
+			}
+			buf.WriteString(n)
+		}
+		buf.WriteByte(']')
+	}
 	buf.WriteString(")")
 }

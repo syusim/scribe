@@ -77,15 +77,15 @@ func parseExprList(s sexp.Sexp) ([]Expr, error) {
 	return result, nil
 }
 
-func ParseQuery(s string) (Node, error) {
+func ParseRelExpr(s string) (RelExpr, error) {
 	t, err := sexp.Parse(s)
 	if err != nil {
 		return nil, err
 	}
-	return parseQuery(t)
+	return parseRelExpr(t)
 }
 
-func parseQuery(s sexp.Sexp) (Node, error) {
+func parseRelExpr(s sexp.Sexp) (RelExpr, error) {
 	switch e := s.(type) {
 	case sexp.Atom:
 		// An atom in a query position is a table reference.
@@ -102,26 +102,237 @@ func parseQuery(s sexp.Sexp) (Node, error) {
 		}
 		switch head {
 		case "join":
-			if len(e) != 4 {
-				return nil, fmt.Errorf("join takes 3 arguments")
-			}
-			left, err := parseQuery(e[1])
-			if err != nil {
-				return nil, err
-			}
-			right, err := parseQuery(e[2])
-			if err != nil {
-				return nil, err
-			}
-			on, err := parseExpr(e[3])
-			if err != nil {
-				return nil, err
-			}
-			return &Join{left, right, on}, nil
+			return parseJoin(e)
+		case "select":
+			return parseSelect(e)
+		case "as":
+			return parseAs(e)
 		default:
 			return nil, fmt.Errorf("unrecognized relational operator %s", e[0])
 		}
 	default:
 		panic(fmt.Sprintf("unhandled type %T", s))
+	}
+}
+
+func parseJoin(l sexp.List) (RelExpr, error) {
+	if len(l) != 4 {
+		return nil, fmt.Errorf("join takes 3 arguments")
+	}
+	left, err := parseRelExpr(l[1])
+	if err != nil {
+		return nil, err
+	}
+	right, err := parseRelExpr(l[2])
+	if err != nil {
+		return nil, err
+	}
+	on, err := parseExpr(l[3])
+	if err != nil {
+		return nil, err
+	}
+	return &Join{left, right, on}, nil
+}
+
+func parseSelect(l sexp.List) (RelExpr, error) {
+	if len(l) != 3 {
+		return nil, fmt.Errorf("select takes 2 arguments")
+	}
+	in, err := parseRelExpr(l[1])
+	if err != nil {
+		return nil, err
+	}
+	pred, err := parseExpr(l[2])
+	if err != nil {
+		return nil, err
+	}
+	return &Select{in, pred}, nil
+}
+
+func parseAtomList(s sexp.Sexp) ([]string, error) {
+	l, ok := s.(sexp.List)
+	if !ok {
+		return nil, fmt.Errorf("expected atom list, got %s", s)
+	}
+
+	result := make([]string, len(l))
+	for i, a := range l {
+		n, ok := a.(sexp.Atom)
+		if !ok {
+			return nil, fmt.Errorf("expected atom list, got %s", s)
+		}
+		result[i] = string(n)
+	}
+	return result, nil
+}
+
+func parseAs(l sexp.List) (RelExpr, error) {
+	if len(l) != 3 && len(l) != 4 {
+		return nil, fmt.Errorf("as takes 2 or 3 arguments")
+	}
+	in, err := parseRelExpr(l[1])
+	if err != nil {
+		return nil, err
+	}
+	name, ok := l[2].(sexp.Atom)
+	if !ok {
+		return nil, fmt.Errorf("as name must be atom")
+	}
+	var names []string
+	if len(l) == 4 {
+		names, err = parseAtomList(l[3])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &As{in, string(name), names}, nil
+}
+
+func ParseStatement(s string) (Statement, error) {
+	t, err := sexp.Parse(s)
+	if err != nil {
+		return nil, err
+	}
+	return parseStatement(t)
+}
+
+func parseType(s sexp.Sexp) (Type, error) {
+	n, ok := s.(sexp.Atom)
+	if !ok {
+		return Type{}, fmt.Errorf("expected atom, got %s", s)
+	}
+	switch string(n) {
+	case "int":
+		return Type{lang.Int}, nil
+	case "string":
+		return Type{lang.String}, nil
+	case "bool":
+		return Type{lang.Bool}, nil
+	default:
+		return Type{}, fmt.Errorf("invalid type %q", n)
+	}
+}
+
+func parseColumnDef(s sexp.Sexp) (ColumnDef, error) {
+	l, ok := s.(sexp.List)
+	if !ok || len(l) != 2 {
+		return ColumnDef{}, fmt.Errorf("expected column def, got %s", s)
+	}
+	name, ok := l[0].(sexp.Atom)
+	if !ok {
+		return ColumnDef{}, fmt.Errorf("expected column name, got %s", l[0])
+	}
+	typ, err := parseType(l[1])
+	if err != nil {
+		return ColumnDef{}, err
+	}
+	return ColumnDef{string(name), typ}, nil
+}
+
+func parseDatum(s sexp.Sexp) (Datum, error) {
+	str, ok := s.(sexp.String)
+	if ok {
+		return Datum{lang.DString(string(str))}, nil
+	}
+	a, ok := s.(sexp.Atom)
+	if !ok {
+		return Datum{}, fmt.Errorf("expected datum, got %s", a)
+	}
+	if a == "true" {
+		return Datum{lang.DBool(true)}, nil
+	}
+	if a == "false" {
+		return Datum{lang.DBool(false)}, nil
+	}
+	d, err := strconv.Atoi(string(a))
+	if err != nil {
+		return Datum{}, err
+	}
+	return Datum{lang.DInt(d)}, nil
+}
+
+func parseRow(s sexp.Sexp) (Row, error) {
+	r, ok := s.(sexp.List)
+	if !ok {
+		return nil, fmt.Errorf("expected error, got %s", s)
+	}
+	result := make([]Datum, len(r))
+	for i, d := range r {
+		parsed, err := parseDatum(d)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = parsed
+	}
+	return Row(result), nil
+}
+
+func parseStatement(s sexp.Sexp) (Statement, error) {
+	l, ok := s.(sexp.List)
+	if !ok {
+		return nil, fmt.Errorf("can't parse %s as a statement", s)
+	}
+	if len(l) == 0 {
+		return nil, fmt.Errorf("%s isn't a statement", s)
+	}
+	h, ok := l[0].(sexp.Atom)
+	if !ok {
+		return nil, fmt.Errorf("head must be atom, was %s", s)
+	}
+	switch string(h) {
+	case "run":
+		if len(l) != 2 {
+			return nil, fmt.Errorf("query takes one argument")
+		}
+		input, err := parseRelExpr(l[1])
+		if err != nil {
+			return nil, err
+		}
+		return &RunQuery{input}, nil
+	case "create-table":
+		if len(l) != 4 {
+			return nil, fmt.Errorf("create-table takes 4 arguments")
+		}
+
+		name, ok := l[1].(sexp.Atom)
+		if !ok {
+			return nil, fmt.Errorf("table name must be atom, was %s", l[1])
+		}
+
+		cols, ok := l[2].(sexp.List)
+		if !ok {
+			return nil, fmt.Errorf("expected list of cols, got %s", l[2])
+		}
+
+		defs := make([]ColumnDef, len(cols))
+		for i, c := range cols {
+			def, err := parseColumnDef(c)
+			if err != nil {
+				return nil, err
+			}
+			defs[i] = def
+		}
+
+		rowList, ok := l[3].(sexp.List)
+		if !ok {
+			return nil, fmt.Errorf("expected list of rows, got %s", l[3])
+		}
+
+		rows := make([]Row, len(rowList))
+		for i, r := range rowList {
+			row, err := parseRow(r)
+			if err != nil {
+				return nil, err
+			}
+			rows[i] = Row(row)
+		}
+
+		return &CreateTable{
+			Name:    string(name),
+			Columns: defs,
+			Data:    rows,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unknown statement %s", h)
 	}
 }
