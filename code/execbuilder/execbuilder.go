@@ -27,8 +27,10 @@ func (b *builder) buildScalar(e memo.ScalarExpr, m opt.ColMap) (exec.ScalarExpr,
 	case *memo.Constant:
 		return s.D, nil
 	case *memo.ColRef:
-		// TODO: error sanely
-		i, _ := m.Get(s.Id)
+		i, ok := m.Get(s.Id)
+		if !ok {
+			panic(fmt.Sprintf("no column with id %d", s.Id))
+		}
 		return &exec.ColRef{
 			Idx: i,
 		}, nil
