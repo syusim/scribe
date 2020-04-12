@@ -25,6 +25,12 @@ func (t Type) Format(buf *bytes.Buffer) {
 	}
 }
 
+func (t Type) String() string {
+	var buf bytes.Buffer
+	t.Format(&buf)
+	return buf.String()
+}
+
 type Column struct {
 	Name string
 	Type Type

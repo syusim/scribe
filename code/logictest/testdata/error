@@ -1,0 +1,24 @@
+exec
+(create-table foo
+  [[x int] [y string]]
+  [[1 "one"]
+   [2 "two"]
+   [3 "three"]
+   [4 "four"]])
+----
+ok
+
+exec
+(create-table bar
+  [[u string] [even bool]]
+  [["one" false]
+   ["two" true]
+   ["three" false]
+   ["four" true]])
+----
+ok
+
+exec
+(run (select foo (= x "foo")))
+----
+error: arguments to = must be same type, got (= int string)

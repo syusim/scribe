@@ -54,3 +54,40 @@ exec
 [2 true]
 [3 false]
 [4 true]
+
+exec
+(run
+  (project
+    (join foo bar (= y u))
+    [(+ x 1) even]))
+----
+[2 false]
+[3 true]
+[4 false]
+[5 true]
+
+exec
+(run
+  (project
+    (project
+      (join foo bar (= y u))
+      [(+ x 1) even])
+    [even]))
+----
+[false]
+[true]
+[false]
+[true]
+
+exec
+(run
+  (project
+    (project
+      (join foo bar (= y u))
+      [(+ x 1) even])
+    []))
+----
+[]
+[]
+[]
+[]

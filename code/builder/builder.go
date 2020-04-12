@@ -69,6 +69,12 @@ func (b *builder) buildScalar(e ast.Expr, scope *scope) (memo.ScalarExpr, error)
 			if args[0].Type() != args[1].Type() {
 				return nil, fmt.Errorf("arguments to = must be same type, got (= %v %v)", args[0].Type(), args[1].Type())
 			}
+		case lang.Plus, lang.Minus, lang.Times:
+			for _, arg := range args {
+				if arg.Type() != lang.Int {
+					return nil, fmt.Errorf("args to %s must be int", a.Op)
+				}
+			}
 		}
 		return &memo.Func{
 			Op:   a.Op,
@@ -113,7 +119,7 @@ func (b *builder) Build(e ast.RelExpr) (memo.RelExpr, *scope, error) {
 		}
 		filter, err := b.buildScalar(a.Predicate, s)
 		if err != nil {
-			return memo.RelExpr{}, nil, nil
+			return memo.RelExpr{}, nil, err
 		}
 		return memo.Wrap(&memo.Select{
 			Input:  input,
@@ -151,13 +157,16 @@ func (b *builder) Build(e ast.RelExpr) (memo.RelExpr, *scope, error) {
 		exprs := make([]memo.ScalarExpr, len(a.Exprs))
 		outCols := make([]opt.ColumnID, len(exprs))
 
+		outScope := newScope()
+
 		for i, e := range a.Exprs {
 			proj, err := b.buildScalar(e, inScope)
 			if err != nil {
 				return memo.RelExpr{}, nil, err
 			}
 			exprs[i] = proj
-			outCols[i] = b.addCol("", proj.Type())
+			outCols[i] = b.addCol(a.Aliases[i], proj.Type())
+			outScope.addCol(a.Aliases[i], outCols[i], proj.Type())
 		}
 
 		return memo.Wrap(&memo.Project{
@@ -165,7 +174,7 @@ func (b *builder) Build(e ast.RelExpr) (memo.RelExpr, *scope, error) {
 
 			ColIDs:      outCols,
 			Projections: exprs,
-		}), newScope(), nil
+		}), outScope, nil
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e))
 	}

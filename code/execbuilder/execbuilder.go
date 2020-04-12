@@ -125,6 +125,8 @@ func (b *builder) Build(e memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			return nil, opt.ColMap{}, err
 		}
 
+		outMap := opt.ColMap{}
+
 		exprs := make([]exec.ScalarExpr, len(o.Projections))
 		for i := range o.Projections {
 			p, err := b.buildScalar(o.Projections[i], m)
@@ -132,12 +134,10 @@ func (b *builder) Build(e memo.RelExpr) (exec.Node, opt.ColMap, error) {
 				return nil, opt.ColMap{}, err
 			}
 			exprs[i] = p
+			outMap.Set(o.ColIDs[i], i)
 		}
 
-		return exec.Project(
-			in,
-			exprs,
-		), opt.ColMap{}, nil
+		return exec.Project(in, exprs), outMap, nil
 
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e.E))

@@ -159,11 +159,31 @@ func parseProject(l sexp.List) (RelExpr, error) {
 	if err != nil {
 		return nil, err
 	}
-	exprs, err := parseExprList(l[2])
-	if err != nil {
-		return nil, err
+
+	l, ok := l[2].(sexp.List)
+	if !ok {
+		return nil, fmt.Errorf("expected expression list")
 	}
-	return &Project{in, exprs}, nil
+	projs := make([]Expr, len(l))
+	aliases := make([]string, len(l))
+	for i := range l {
+		// Special case: bare column references pass through their name.
+		if c, ok := l[i].(sexp.Atom); ok {
+			aliases[i] = string(c)
+		}
+
+		next, err := parseExpr(l[i])
+		if err != nil {
+			return nil, err
+		}
+		projs[i] = next
+	}
+
+	return &Project{
+		in,
+		projs,
+		aliases,
+	}, nil
 }
 
 func parseAtomList(s sexp.Sexp) ([]string, error) {

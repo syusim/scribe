@@ -56,6 +56,8 @@ func (f *Func) Type() lang.Type {
 	switch f.Op {
 	case lang.Eq:
 		return lang.Bool
+	case lang.Plus, lang.Minus, lang.Times:
+		return lang.Int
 	default:
 		panic(fmt.Sprintf("unhandled: %v", f.Op))
 	}

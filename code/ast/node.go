@@ -48,6 +48,8 @@ func (s *Select) Format(buf *bytes.Buffer) {
 type Project struct {
 	Input RelExpr
 	Exprs []Expr
+	// TODO: round-trip this field
+	Aliases []string
 }
 
 func (p *Project) Format(buf *bytes.Buffer) {
