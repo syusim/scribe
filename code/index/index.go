@@ -27,6 +27,7 @@ const (
 	gt           = 1
 )
 
+// TODO: this needs to use lang.Compare
 func compare(a, b opt.Row, orderBy order) cmpResult {
 	for _, idx := range orderBy {
 		if a[idx] < b[idx] {

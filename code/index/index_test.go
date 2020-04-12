@@ -16,13 +16,10 @@ func spool(it *Iterator) []opt.Row {
 }
 
 func TestScan(t *testing.T) {
-	idx := New(opt.Relation{
-		ColNames: []string{"first", "last"},
-		Rows: []opt.Row{
-			{"a", "x"},
-			{"b", "z"},
-			{"c", "y"},
-		},
+	idx := New([]opt.Row{
+		{"a", "x"},
+		{"b", "z"},
+		{"c", "y"},
 	},
 		[]opt.ColOrdinal{1},
 	)
