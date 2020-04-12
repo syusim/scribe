@@ -6,6 +6,7 @@ import (
 )
 
 type Datum interface {
+	Format(buf *bytes.Buffer)
 }
 
 type DInt int

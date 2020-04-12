@@ -6,7 +6,14 @@ type Expr interface {
 }
 
 // TODO: this is actually a group, but not sure how to name them appropriately.
+// Also not sure how to structure this right so that other packages and inspect it sanely.
 type RelExpr struct {
+	E relExpr
+}
+
+// TODO: ?? this sucks, think about this more
+func Wrap(e relExpr) RelExpr {
+	return RelExpr{e}
 }
 
 type relExpr interface {

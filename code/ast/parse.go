@@ -229,34 +229,34 @@ func parseColumnDef(s sexp.Sexp) (lang.Column, error) {
 	return lang.Column{string(name), typ}, nil
 }
 
-func parseDatum(s sexp.Sexp) (Datum, error) {
+func parseDatum(s sexp.Sexp) (lang.Datum, error) {
 	str, ok := s.(sexp.String)
 	if ok {
-		return Datum{lang.DString(string(str))}, nil
+		return lang.DString(string(str)), nil
 	}
 	a, ok := s.(sexp.Atom)
 	if !ok {
-		return Datum{}, fmt.Errorf("expected datum, got %s", a)
+		return nil, fmt.Errorf("expected datum, got %s", a)
 	}
 	if a == "true" {
-		return Datum{lang.DBool(true)}, nil
+		return lang.DBool(true), nil
 	}
 	if a == "false" {
-		return Datum{lang.DBool(false)}, nil
+		return lang.DBool(false), nil
 	}
 	d, err := strconv.Atoi(string(a))
 	if err != nil {
-		return Datum{}, err
+		return nil, err
 	}
-	return Datum{lang.DInt(d)}, nil
+	return lang.DInt(d), nil
 }
 
-func parseRow(s sexp.Sexp) (Row, error) {
+func parseRow(s sexp.Sexp) (lang.Row, error) {
 	r, ok := s.(sexp.List)
 	if !ok {
 		return nil, fmt.Errorf("expected error, got %s", s)
 	}
-	result := make([]Datum, len(r))
+	result := make(lang.Row, len(r))
 	for i, d := range r {
 		parsed, err := parseDatum(d)
 		if err != nil {
@@ -264,7 +264,7 @@ func parseRow(s sexp.Sexp) (Row, error) {
 		}
 		result[i] = parsed
 	}
-	return Row(result), nil
+	return result, nil
 }
 
 func parseStatement(s sexp.Sexp) (Statement, error) {
@@ -318,13 +318,13 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 			return nil, fmt.Errorf("expected list of rows, got %s", l[3])
 		}
 
-		rows := make([]Row, len(rowList))
+		rows := make([]lang.Row, len(rowList))
 		for i, r := range rowList {
 			row, err := parseRow(r)
 			if err != nil {
 				return nil, err
 			}
-			rows[i] = Row(row)
+			rows[i] = row
 		}
 
 		return &CreateTable{

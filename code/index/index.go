@@ -3,13 +3,14 @@ package index
 import (
 	"sort"
 
+	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 )
 
 type order []opt.ColOrdinal
 
 type T struct {
-	data    []opt.Row
+	data    []lang.Row
 	orderBy order
 }
 
@@ -28,22 +29,24 @@ const (
 )
 
 // TODO: this needs to use lang.Compare
-func compare(a, b opt.Row, orderBy order) cmpResult {
+func compare(a, b lang.Row, orderBy order) cmpResult {
 	for _, idx := range orderBy {
-		if a[idx] < b[idx] {
+		cmp := lang.Compare(a[idx], b[idx])
+		if cmp == lang.LT {
 			return lt
-		} else if a[idx] > b[idx] {
+		} else if cmp == lang.GT {
 			return gt
 		}
 	}
 	return eq
 }
 
-func compareKey(a opt.Row, key opt.Key, orderBy order) cmpResult {
+func compareKey(a lang.Row, key lang.Key, orderBy order) cmpResult {
 	for i, idx := range orderBy {
-		if a[idx] < key[i] {
+		cmp := lang.Compare(a[idx], key[i])
+		if cmp == lang.LT {
 			return lt
-		} else if a[idx] > key[i] {
+		} else if cmp == lang.GT {
 			return gt
 		}
 	}
@@ -51,9 +54,9 @@ func compareKey(a opt.Row, key opt.Key, orderBy order) cmpResult {
 }
 
 //(index.header
-func New(data []opt.Row, order []opt.ColOrdinal) *T { //)
+func New(data []lang.Row, order []opt.ColOrdinal) *T { //)
 	//(index.make-a-copy
-	d := make([]opt.Row, len(data))
+	d := make([]lang.Row, len(data))
 	copy(d, data)
 	//)
 
@@ -69,8 +72,16 @@ func New(data []opt.Row, order []opt.ColOrdinal) *T { //)
 	}
 } //)
 
+//(index.iter
+func (idx *T) Iter() *Iterator {
+	return &Iterator{
+		index: idx,
+		pos:   0,
+	}
+} //)
+
 //(index.seekge
-func (idx *T) SeekGE(key opt.Key) *Iterator {
+func (idx *T) SeekGE(key lang.Key) *Iterator {
 	//[index.seekge-slow
 	//start := 0
 	//for start < len(idx.data) && compareKey(idx.data[start], key, idx.orderBy) == lt {
@@ -89,7 +100,7 @@ func (idx *T) SeekGE(key opt.Key) *Iterator {
 } //)
 
 //(index.it.next
-func (it *Iterator) Next() (opt.Row, bool) {
+func (it *Iterator) Next() (lang.Row, bool) {
 	if it.pos >= len(it.index.data) {
 		return nil, false
 	}
@@ -99,7 +110,7 @@ func (it *Iterator) Next() (opt.Row, bool) {
 } //)
 
 //(index.it.prev
-func (it *Iterator) Prev() (opt.Row, bool) {
+func (it *Iterator) Prev() (lang.Row, bool) {
 	if it.pos <= 1 {
 		return nil, false
 	}

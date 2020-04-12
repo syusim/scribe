@@ -14,7 +14,11 @@ type Index struct {
 	data     *index.T
 }
 
-func (i *Index) Scan(key opt.Key) *index.Iterator {
+func (i *Index) Scan() *index.Iterator {
+	return i.data.Iter()
+}
+
+func (i *Index) ScanGE(key lang.Key) *index.Iterator {
 	return i.data.SeekGE(key)
 }
 
@@ -52,6 +56,15 @@ func (c *Catalog) Table(i int) *Table {
 	return &c.tables[i]
 }
 
+func (c *Catalog) TableByName(s string) (*Table, bool) {
+	for i := range c.tables {
+		if c.tables[i].Name == s {
+			return &c.tables[i], true
+		}
+	}
+	return nil, false
+}
+
 func New() *Catalog {
 	return &Catalog{}
 }
@@ -59,7 +72,7 @@ func New() *Catalog {
 func (c *Catalog) AddTable(
 	name string,
 	cols []lang.Column,
-	data []opt.Row,
+	data []lang.Row,
 	// TODO: have a way for these to have names.
 	indexes [][]opt.ColOrdinal,
 ) {
@@ -68,12 +81,12 @@ func (c *Catalog) AddTable(
 		cols: cols,
 	}
 
-	idxs := make([]Index, len(indexes))
+	tab.indexes = make([]Index, len(indexes))
 	for i := range indexes {
 		// TODO: use the names of the relevant columns?
-		idxs[i].name = fmt.Sprintf("%s_idx_%d", name, i+1)
-		idxs[i].ordering = indexes[i]
-		idxs[i].data = index.New(data, indexes[i])
+		tab.indexes[i].name = fmt.Sprintf("%s_idx_%d", name, i+1)
+		tab.indexes[i].ordering = indexes[i]
+		tab.indexes[i].data = index.New(data, indexes[i])
 	}
 
 	c.tables = append(c.tables, tab)

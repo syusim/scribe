@@ -1,11 +1,22 @@
 exec
 (create-table foo
-  [[x int]]
-  [[1]])
+  [[x int] [y string]]
+  [[1 "one"]
+   [2 "two"]
+   [3 "three"]])
 ----
 ok
 
 exec
 (run foo)
 ----
-error: unhandled statement *ast.RunQuery
+[1 "one"]
+[2 "two"]
+[3 "three"]
+
+exec
+(run (select foo (= x 1)))
+----
+[1 "one"]
+[2 "two"]
+[3 "three"]

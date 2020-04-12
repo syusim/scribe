@@ -2,11 +2,10 @@ package exec
 
 //(imports
 import (
-	"bytes"
 	"fmt"
-	"strings"
 
-	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/index"
+	"github.com/justinj/scribe/code/lang"
 ) //)
 
 //(node-interface
@@ -17,31 +16,23 @@ type Node interface {
 	// Next returns the next row in the Node's result set. If there are no more
 	// rows to return, the second return value will be false, otherwise, it will
 	// be true.
-	Next() (opt.Row, bool)
+	Next() (lang.Row, bool)
 } //)
 
 //(scan
 type scan struct {
-	rel opt.Relation
-
-	// idx is the next row to output from the relation.
-	idx int
+	iter *index.Iterator
 }
 
 func (s *scan) Start() {}
 
-func (s *scan) Next() (opt.Row, bool) {
-	if s.idx >= len(s.rel.Rows) {
-		return nil, false
-	}
-	s.idx++
-	return s.rel.Rows[s.idx-1], true
+func (s *scan) Next() (lang.Row, bool) {
+	return s.iter.Next()
 }
 
-func Scan(r opt.Relation) Node {
+func Scan(iter *index.Iterator) Node {
 	return &scan{
-		idx: 0,
-		rel: r,
+		iter: iter,
 	}
 } //)
 
@@ -49,42 +40,22 @@ func Scan(r opt.Relation) Node {
 type select1 struct {
 	input Node
 	i     int
-	d     string
+	d     lang.Datum
 }
 
 func (s *select1) Start() {
 	s.input.Start()
 }
 
-func (s *select1) Next() (opt.Row, bool) {
+func (s *select1) Next() (lang.Row, bool) {
 	next, ok := s.input.Next()
-	for ok && next[s.i] != s.d {
+	for ok && lang.Compare(next[s.i], s.d) != lang.EQ {
 		next, ok = s.input.Next()
 	}
 	return next, ok
 }
 
-func Select1(in Node, i int, d string) Node {
-	//(push-filter-into-cross
-	// PushSelectIntoCross
-	if c, ok := in.(*cross); ok {
-		l := c.l
-		r := c.r
-		lc := cols(l)
-
-		if i < len(lc) {
-			return Cross(
-				Select1(l, i, d),
-				r,
-			)
-		} else {
-			return Cross(
-				l,
-				Select1(r, i-len(lc), d),
-			)
-		}
-	}
-	//)
+func Select1(in Node, i int, d lang.Datum) Node {
 	return &select1{
 		input: in,
 		i:     i,
@@ -104,7 +75,7 @@ func (s *select2) Start() {
 	s.input.Start()
 }
 
-func (s *select2) Next() (opt.Row, bool) {
+func (s *select2) Next() (lang.Row, bool) {
 	next, ok := s.input.Next()
 	for ok && next[s.i] != next[s.j] {
 		next, ok = s.input.Next()
@@ -129,12 +100,12 @@ func (p *project) Start() {
 	p.input.Start()
 }
 
-func (p *project) Next() (opt.Row, bool) {
+func (p *project) Next() (lang.Row, bool) {
 	next, ok := p.input.Next()
 	if !ok {
 		return nil, false
 	}
-	out := make(opt.Row, len(p.idxs))
+	out := make(lang.Row, len(p.idxs))
 	for i := range p.idxs {
 		out[i] = next[p.idxs[i]]
 	}
@@ -152,8 +123,8 @@ type cross struct {
 	l Node
 	r Node
 
-	leftRows []opt.Row
-	rightRow opt.Row
+	leftRows []lang.Row
+	rightRow lang.Row
 	leftIdx  int
 	done     bool
 }
@@ -180,7 +151,7 @@ func (c *cross) Start() {
 	}
 }
 
-func (c *cross) Next() (opt.Row, bool) {
+func (c *cross) Next() (lang.Row, bool) {
 	if c.done {
 		return nil, false
 	}
@@ -196,7 +167,7 @@ func (c *cross) Next() (opt.Row, bool) {
 		}
 	}
 
-	result := make(opt.Row, 0, len(c.leftRows[c.leftIdx])+len(c.rightRow))
+	result := make(lang.Row, 0, len(c.leftRows[c.leftIdx])+len(c.rightRow))
 	result = append(result, c.leftRows[c.leftIdx]...)
 	result = append(result, c.rightRow...)
 	c.leftIdx++
@@ -211,42 +182,41 @@ func Cross(l, r Node) Node {
 	}
 }
 
-func cols(n Node) []string {
-	switch e := n.(type) {
-	case *scan:
-		return e.rel.ColNames
-	case *select1:
-		return cols(e.input)
-	case *select2:
-		return cols(e.input)
-	case *project:
-		c := cols(e.input)
-		out := make([]string, len(e.idxs))
-		for i := range e.idxs {
-			out[i] = c[e.idxs[i]]
-		}
-		return out
-	case *cross:
-		lc := cols(e.l)
-		rc := cols(e.r)
-		c := make([]string, len(lc)+len(rc))
-		copy(c[:len(lc)], lc)
-		copy(c[len(lc):], rc)
-		return c
-	}
-	panic("unhandled")
-}
+// func cols(n Node) []string {
+// 	switch e := n.(type) {
+// 	case *scan:
+// 		// TODO: fix this!
+// 		return e.rel.ColNames
+// 	case *select1:
+// 		return cols(e.input)
+// 	case *select2:
+// 		return cols(e.input)
+// 	case *project:
+// 		c := cols(e.input)
+// 		out := make([]string, len(e.idxs))
+// 		for i := range e.idxs {
+// 			out[i] = c[e.idxs[i]]
+// 		}
+// 		return out
+// 	case *cross:
+// 		lc := cols(e.l)
+// 		rc := cols(e.r)
+// 		c := make([]string, len(lc)+len(rc))
+// 		copy(c[:len(lc)], lc)
+// 		copy(c[len(lc):], rc)
+// 		return c
+// 	}
+// 	panic("unhandled")
+// }
 
-func spool(n Node) opt.Relation {
+// TODO: does this need error handling?
+func Spool(n Node) []lang.Row {
 	n.Start()
-	result := make([]opt.Row, 0)
+	result := make([]lang.Row, 0)
 	for next, ok := n.Next(); ok; next, ok = n.Next() {
 		result = append(result, next)
 	}
-	return opt.Relation{
-		ColNames: cols(n),
-		Rows:     result,
-	}
+	return result
 }
 
 func ChildCount(n Node) int {
@@ -281,81 +251,81 @@ func Child(n Node, i int) Node {
 	panic("unhandled")
 }
 
-func Explain(n Node) string {
-	var buf bytes.Buffer
-	indent := func(depth int) {
-		for i := 0; i < depth; i++ {
-			buf.WriteString("  ")
-		}
-	}
-	var p func(n Node, depth int)
-	p = func(n Node, depth int) {
-		switch e := n.(type) {
-		case *scan:
-			buf.WriteString("scan")
-		case *select1:
-			fmt.Fprintf(&buf, "select [%d] = %q", e.i, e.d)
-		case *select2:
-			fmt.Fprintf(&buf, "select [%d] = [%d]", e.i, e.j)
-		case *project:
-			fmt.Fprintf(&buf, "project %v", e.idxs)
-		case *cross:
-			fmt.Fprintf(&buf, "cross")
-		}
+// func Explain(n Node) string {
+// 	var buf bytes.Buffer
+// 	indent := func(depth int) {
+// 		for i := 0; i < depth; i++ {
+// 			buf.WriteString("  ")
+// 		}
+// 	}
+// 	var p func(n Node, depth int)
+// 	p = func(n Node, depth int) {
+// 		switch e := n.(type) {
+// 		case *scan:
+// 			buf.WriteString("scan")
+// 		case *select1:
+// 			fmt.Fprintf(&buf, "select [%d] = %q", e.i, e.d)
+// 		case *select2:
+// 			fmt.Fprintf(&buf, "select [%d] = [%d]", e.i, e.j)
+// 		case *project:
+// 			fmt.Fprintf(&buf, "project %v", e.idxs)
+// 		case *cross:
+// 			fmt.Fprintf(&buf, "cross")
+// 		}
 
-		fmt.Fprintf(&buf, " (%s)\n", strings.Join(cols(n), ","))
-		for i, m := 0, ChildCount(n); i < m; i++ {
-			indent(depth + 1)
-			buf.WriteString("-> ")
-			p(Child(n, i), depth+1)
-		}
-	}
+// 		fmt.Fprintf(&buf, " (%s)\n", strings.Join(cols(n), ","))
+// 		for i, m := 0, ChildCount(n); i < m; i++ {
+// 			indent(depth + 1)
+// 			buf.WriteString("-> ")
+// 			p(Child(n, i), depth+1)
+// 		}
+// 	}
 
-	p(n, 0)
+// 	p(n, 0)
 
-	return buf.String()
-}
+// 	return buf.String()
+// }
 
-func main() {
-	r := opt.Relation{
-		ColNames: []string{"name", "from", "resides"},
-		Rows: []opt.Row{
-			{"Jordan", "New York", "New York"},
-			{"Lauren", "California", "New York"},
-			{"Justin", "Ontario", "New York"},
-			{"Devin", "California", "California"},
-			{"Smudge", "Ontario", "Ontario"},
-		},
-	}
+// func main() {
+// 	r := opt.Relation{
+// 		ColNames: []string{"name", "from", "resides"},
+// 		Rows: []lang.Row{
+// 			{"Jordan", "New York", "New York"},
+// 			{"Lauren", "California", "New York"},
+// 			{"Justin", "Ontario", "New York"},
+// 			{"Devin", "California", "California"},
+// 			{"Smudge", "Ontario", "Ontario"},
+// 		},
+// 	}
 
-	c := opt.Relation{
-		ColNames: []string{"location", "country"},
-		Rows: []opt.Row{
-			{"New York", "United States"},
-			{"California", "United States"},
-			{"Ontario", "Canada"},
-		},
-	}
+// 	c := opt.Relation{
+// 		ColNames: []string{"location", "country"},
+// 		Rows: []lang.Row{
+// 			{"New York", "United States"},
+// 			{"California", "United States"},
+// 			{"Ontario", "Canada"},
+// 		},
+// 	}
 
-	fmt.Println(
-		Explain(
-			Project(
-				Select2(
-					Select1(
-						Cross(
-							Scan(r),
-							Scan(c),
-						),
-						0,
-						"Justin",
-					),
-					2,
-					3,
-				),
-				[]int{0, 4},
-			),
-		),
-	)
-}
+// 	fmt.Println(
+// 		Explain(
+// 			Project(
+// 				Select2(
+// 					Select1(
+// 						Cross(
+// 							Scan(r),
+// 							Scan(c),
+// 						),
+// 						0,
+// 						"Justin",
+// 					),
+// 					2,
+// 					3,
+// 				),
+// 				[]int{0, 4},
+// 			),
+// 		),
+// 	)
+// }
 
 //)
