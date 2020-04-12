@@ -2,6 +2,7 @@ package opt
 
 import "bytes"
 
+// TODO: should Row be in lang?
 //(relational-types
 type Row []string
 type Relation struct {
@@ -13,6 +14,8 @@ type Key Row //)
 
 //(col-ordinal-type
 type ColOrdinal int //)
+
+type ColumnID int
 
 //(relation.string
 func (t Relation) String() string {
