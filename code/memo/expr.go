@@ -22,22 +22,24 @@ type relExpr interface {
 
 type Scan struct {
 	TableName string
+	Cols      []opt.ColumnID
 }
 
-type Cross struct {
+type Join struct {
 	Left  RelExpr
 	Right RelExpr
+	On    ScalarExpr
 }
 
 type Project struct {
 	Input RelExpr
 
-	Columns opt.ColSet
+	ColIDs      []opt.ColumnID
+	Projections []ScalarExpr
 }
 
 type Select struct {
-	Input  RelExpr
+	Input RelExpr
+	// TODO: unify terminology here: is it filter or predicate?
 	Filter ScalarExpr
-
-	Columns opt.ColSet
 }

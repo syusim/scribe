@@ -3,7 +3,18 @@ exec
   [[x int] [y string]]
   [[1 "one"]
    [2 "two"]
-   [3 "three"]])
+   [3 "three"]
+   [4 "four"]])
+----
+ok
+
+exec
+(create-table bar
+  [[u string] [even bool]]
+  [["one" false]
+   ["two" true]
+   ["three" false]
+   ["four" true]])
 ----
 ok
 
@@ -13,10 +24,33 @@ exec
 [1 "one"]
 [2 "two"]
 [3 "three"]
+[4 "four"]
 
 exec
 (run (select foo (= x 1)))
 ----
 [1 "one"]
+
+exec
+(run (select foo (= y "two")))
+----
 [2 "two"]
-[3 "three"]
+
+exec
+(run (join foo bar (= y u)))
+----
+[1 "one" "one" false]
+[2 "two" "two" true]
+[3 "three" "three" false]
+[4 "four" "four" true]
+
+exec
+(run
+  (project
+    (join foo bar (= y u))
+    [x even]))
+----
+[1 false]
+[2 true]
+[3 false]
+[4 true]

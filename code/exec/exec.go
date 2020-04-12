@@ -2,8 +2,6 @@ package exec
 
 //(imports
 import (
-	"fmt"
-
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
 ) //)
@@ -39,8 +37,7 @@ func Scan(iter *index.Iterator) Node {
 //(select1
 type select1 struct {
 	input Node
-	i     int
-	d     lang.Datum
+	p     ScalarExpr
 }
 
 func (s *select1) Start() {
@@ -48,52 +45,35 @@ func (s *select1) Start() {
 }
 
 func (s *select1) Next() (lang.Row, bool) {
-	next, ok := s.input.Next()
-	for ok && lang.Compare(next[s.i], s.d) != lang.EQ {
+	var evaled lang.Datum = lang.DBool(false)
+	var next lang.Row
+	for evaled != lang.DBool(true) {
+		var ok bool
 		next, ok = s.input.Next()
+		if !ok {
+			return nil, false
+		}
+		var err error
+		evaled, err = s.p.Eval(next)
+		if err != nil {
+			// TODO: fixme
+			panic(err)
+		}
 	}
-	return next, ok
+	return next, true
 }
 
-func Select1(in Node, i int, d lang.Datum) Node {
+func Select(in Node, pred ScalarExpr) Node {
 	return &select1{
 		input: in,
-		i:     i,
-		d:     d,
+		p:     pred,
 	}
 } //)
 
-//(the-rest
-type select2 struct {
-	input Node
-
-	i int
-	j int
-}
-
-func (s *select2) Start() {
-	s.input.Start()
-}
-
-func (s *select2) Next() (lang.Row, bool) {
-	next, ok := s.input.Next()
-	for ok && next[s.i] != next[s.j] {
-		next, ok = s.input.Next()
-	}
-	return next, ok
-}
-
-func Select2(in Node, i, j int) Node {
-	return &select2{
-		input: in,
-		i:     i,
-		j:     j,
-	}
-}
-
+//(project
 type project struct {
 	input Node
-	idxs  []int
+	exprs []ScalarExpr
 }
 
 func (p *project) Start() {
@@ -105,19 +85,24 @@ func (p *project) Next() (lang.Row, bool) {
 	if !ok {
 		return nil, false
 	}
-	out := make(lang.Row, len(p.idxs))
-	for i := range p.idxs {
-		out[i] = next[p.idxs[i]]
+	row := make(lang.Row, len(p.exprs))
+	for i := range p.exprs {
+		evaled, err := p.exprs[i].Eval(next)
+		if err != nil {
+			// TODO: fixme
+			panic("no good chief")
+		}
+		row[i] = evaled
 	}
-	return out, true
+	return row, true
 }
 
-func Project(in Node, idxs []int) Node {
+func Project(in Node, exprs []ScalarExpr) Node {
 	return &project{
 		input: in,
-		idxs:  idxs,
+		exprs: exprs,
 	}
-}
+} //)
 
 type cross struct {
 	l Node
@@ -219,37 +204,37 @@ func Spool(n Node) []lang.Row {
 	return result
 }
 
-func ChildCount(n Node) int {
-	switch n.(type) {
-	case *scan:
-		return 0
-	case *select1, *select2, *project:
-		return 1
-	case *cross:
-		return 2
-	default:
-		panic(fmt.Sprintf("unhandled node %T", n))
-	}
-}
+// func ChildCount(n Node) int {
+// 	switch n.(type) {
+// 	case *scan:
+// 		return 0
+// 	case *select1, *select2, *project:
+// 		return 1
+// 	case *cross:
+// 		return 2
+// 	default:
+// 		panic(fmt.Sprintf("unhandled node %T", n))
+// 	}
+// }
 
-func Child(n Node, i int) Node {
-	switch e := n.(type) {
-	case *select1:
-		return e.input
-	case *select2:
-		return e.input
-	case *project:
-		return e.input
-	case *cross:
-		switch i {
-		case 0:
-			return e.l
-		case 1:
-			return e.r
-		}
-	}
-	panic("unhandled")
-}
+// func Child(n Node, i int) Node {
+// 	switch e := n.(type) {
+// 	case *select1:
+// 		return e.input
+// 	case *select2:
+// 		return e.input
+// 	case *project:
+// 		return e.input
+// 	case *cross:
+// 		switch i {
+// 		case 0:
+// 			return e.l
+// 		case 1:
+// 			return e.r
+// 		}
+// 	}
+// 	panic("unhandled")
+// }
 
 // func Explain(n Node) string {
 // 	var buf bytes.Buffer

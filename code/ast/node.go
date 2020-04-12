@@ -42,7 +42,25 @@ func (s *Select) Format(buf *bytes.Buffer) {
 	s.Input.Format(buf)
 	buf.WriteByte(' ')
 	s.Predicate.Format(buf)
-	buf.WriteString(")")
+	buf.WriteByte(')')
+}
+
+type Project struct {
+	Input RelExpr
+	Exprs []Expr
+}
+
+func (p *Project) Format(buf *bytes.Buffer) {
+	buf.WriteString("(project ")
+	p.Input.Format(buf)
+	buf.WriteString(" [")
+	for i, e := range p.Exprs {
+		if i > 0 {
+			buf.WriteByte(' ')
+		}
+		e.Format(buf)
+	}
+	buf.WriteString("])")
 }
 
 type As struct {

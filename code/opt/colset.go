@@ -1,23 +1,22 @@
 package opt
 
-import "github.com/cockroachdb/cockroach/pkg/sql/opt"
-
 // TODO: optimize this!
 type ColSet struct {
-	elems map[opt.ColumnID]struct{}
+	elems map[ColumnID]struct{}
 }
 
+// TODO: get rid of this, use zero value as empty
 func MakeColSet() *ColSet {
 	return &ColSet{
-		elems: make(map[opt.ColumnID]struct{}),
+		elems: make(map[ColumnID]struct{}),
 	}
 }
 
-func (c *ColSet) Add(col opt.ColumnID) {
+func (c *ColSet) Add(col ColumnID) {
 	c.elems[col] = struct{}{}
 }
 
-func (c *ColSet) Has(col opt.ColumnID) bool {
+func (c *ColSet) Has(col ColumnID) bool {
 	_, ok := c.elems[col]
 	return ok
 }

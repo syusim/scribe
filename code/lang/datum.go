@@ -7,6 +7,9 @@ import (
 
 type Datum interface {
 	Format(buf *bytes.Buffer)
+
+	// To meet the exec.ScalarExpr interface.
+	Eval(binding Row) (Datum, error)
 }
 
 type DInt int
@@ -15,10 +18,18 @@ func (d DInt) Format(buf *bytes.Buffer) {
 	fmt.Fprintf(buf, "%d", d)
 }
 
+func (d DInt) Eval(_ Row) (Datum, error) {
+	return d, nil
+}
+
 type DString string
 
 func (d DString) Format(buf *bytes.Buffer) {
 	fmt.Fprintf(buf, "%q", string(d))
+}
+
+func (d DString) Eval(_ Row) (Datum, error) {
+	return d, nil
 }
 
 type DBool bool
@@ -29,6 +40,10 @@ func (d DBool) Format(buf *bytes.Buffer) {
 	} else {
 		buf.WriteString("false")
 	}
+}
+
+func (d DBool) Eval(_ Row) (Datum, error) {
+	return d, nil
 }
 
 type CmpResult int

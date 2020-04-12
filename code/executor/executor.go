@@ -44,13 +44,13 @@ func (e *executor) Run(cmd string) (Result, error) {
 		return Result{Msg: "ok"}, nil
 	case *ast.RunQuery:
 		b := builder.New(e.catalog)
-		rel, err := b.Build(c.Input)
+		rel, _, err := b.Build(c.Input)
 		if err != nil {
 			return Result{}, err
 		}
 
 		eb := execbuilder.New(e.catalog)
-		plan, err := eb.Build(rel)
+		plan, _, err := eb.Build(rel)
 		if err != nil {
 			return Result{}, err
 		}

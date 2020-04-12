@@ -11,32 +11,32 @@ type ScalarExpr interface {
 }
 
 type ColRef struct {
-	idx int
+	Idx int
 }
 
 func (c *ColRef) Eval(binding lang.Row) (lang.Datum, error) {
 	// TODO: panic with a sane error message if oob
-	return binding[c.idx], nil
+	return binding[c.Idx], nil
 }
 
 type FuncInvocation struct {
-	op   lang.Func
-	args []ScalarExpr
+	Op   lang.Func
+	Args []ScalarExpr
 }
 
 func (f *FuncInvocation) Eval(binding lang.Row) (lang.Datum, error) {
-	evaledArgs := make([]lang.Datum, len(f.args))
-	for i, a := range f.args {
+	evaledArgs := make([]lang.Datum, len(f.Args))
+	for i, a := range f.Args {
 		d, err := a.Eval(binding)
 		if err != nil {
 			return nil, err
 		}
 		evaledArgs[i] = d
 	}
-	switch f.op {
+	switch f.Op {
 	case lang.Eq:
 		return lang.DBool(lang.Compare(evaledArgs[0], evaledArgs[1]) == lang.EQ), nil
 	default:
-		panic(fmt.Sprintf("unhandled operator %v", f.op))
+		panic(fmt.Sprintf("unhandled operator %v", f.Op))
 	}
 }

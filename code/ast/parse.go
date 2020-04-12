@@ -56,7 +56,7 @@ func parseExpr(s sexp.Sexp) (Expr, error) {
 			}
 			args[i] = parsed
 		}
-		return ScalarFunc{op, args}, nil
+		return &ScalarFunc{op, args}, nil
 	}
 	panic(fmt.Sprintf("unexpected type: %T", s))
 }
@@ -105,6 +105,8 @@ func parseRelExpr(s sexp.Sexp) (RelExpr, error) {
 			return parseJoin(e)
 		case "select":
 			return parseSelect(e)
+		case "project":
+			return parseProject(e)
 		case "as":
 			return parseAs(e)
 		default:
@@ -147,6 +149,21 @@ func parseSelect(l sexp.List) (RelExpr, error) {
 		return nil, err
 	}
 	return &Select{in, pred}, nil
+}
+
+func parseProject(l sexp.List) (RelExpr, error) {
+	if len(l) != 3 {
+		return nil, fmt.Errorf("project takes 2 arguments")
+	}
+	in, err := parseRelExpr(l[1])
+	if err != nil {
+		return nil, err
+	}
+	exprs, err := parseExprList(l[2])
+	if err != nil {
+		return nil, err
+	}
+	return &Project{in, exprs}, nil
 }
 
 func parseAtomList(s sexp.Sexp) ([]string, error) {
