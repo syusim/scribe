@@ -1,0 +1,35 @@
+ddl
+(create-table abc
+  [[a int] [b int] [c int]])
+----
+ok
+
+ddl
+(create-table xyz
+  [[x int] [y int] [z int]])
+----
+ok
+
+plan
+xyz
+----
+-> Scan [1 2 3]
+
+plan
+(select xyz (= x 3))
+----
+-> Select
+ -> Scan [1 2 3]
+ -> Func (=)
+  -> ColRef (1)
+  -> Constant (3)
+
+plan
+(join abc xyz (= a x))
+----
+-> Join
+ -> Scan [1 2 3]
+ -> Scan [4 5 6]
+ -> Func (=)
+  -> ColRef (1)
+  -> ColRef (4)

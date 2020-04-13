@@ -327,8 +327,8 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 		}
 		return &RunQuery{input}, nil
 	case "create-table":
-		if len(l) != 4 {
-			return nil, fmt.Errorf("create-table takes 4 arguments")
+		if len(l) < 3 || len(l) > 4 {
+			return nil, fmt.Errorf("create-table takes 3 or 4 arguments")
 		}
 
 		name, ok := l[1].(sexp.Atom)
@@ -350,18 +350,21 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 			defs[i] = def
 		}
 
-		rowList, ok := l[3].(sexp.List)
-		if !ok {
-			return nil, fmt.Errorf("expected list of rows, got %s", l[3])
-		}
-
-		rows := make([]lang.Row, len(rowList))
-		for i, r := range rowList {
-			row, err := parseRow(r)
-			if err != nil {
-				return nil, err
+		var rows []lang.Row
+		if len(l) > 3 {
+			rowList, ok := l[3].(sexp.List)
+			if !ok {
+				return nil, fmt.Errorf("expected list of rows, got %s", l[3])
 			}
-			rows[i] = row
+
+			rows = make([]lang.Row, len(rowList))
+			for i, r := range rowList {
+				row, err := parseRow(r)
+				if err != nil {
+					return nil, err
+				}
+				rows[i] = row
+			}
 		}
 
 		return &CreateTable{

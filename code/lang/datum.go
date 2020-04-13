@@ -6,6 +6,8 @@ import (
 )
 
 type Datum interface {
+	fmt.Stringer
+
 	Format(buf *bytes.Buffer)
 
 	// To meet the exec.ScalarExpr interface.
@@ -18,6 +20,12 @@ func (d DInt) Format(buf *bytes.Buffer) {
 	fmt.Fprintf(buf, "%d", d)
 }
 
+func (d DInt) String() string {
+	var buf bytes.Buffer
+	d.Format(&buf)
+	return buf.String()
+}
+
 func (d DInt) Eval(_ Row) (Datum, error) {
 	return d, nil
 }
@@ -26,6 +34,12 @@ type DString string
 
 func (d DString) Format(buf *bytes.Buffer) {
 	fmt.Fprintf(buf, "%q", string(d))
+}
+
+func (d DString) String() string {
+	var buf bytes.Buffer
+	d.Format(&buf)
+	return buf.String()
 }
 
 func (d DString) Eval(_ Row) (Datum, error) {
@@ -40,6 +54,12 @@ func (d DBool) Format(buf *bytes.Buffer) {
 	} else {
 		buf.WriteString("false")
 	}
+}
+
+func (d DBool) String() string {
+	var buf bytes.Buffer
+	d.Format(&buf)
+	return buf.String()
 }
 
 func (d DBool) Eval(_ Row) (Datum, error) {

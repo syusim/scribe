@@ -1,0 +1,8 @@
+plan-scalar
+(+ 1 (+ 2 3))
+----
+-> Func (+)
+ -> Constant (1)
+ -> Func (+)
+  -> Constant (2)
+  -> Constant (3)

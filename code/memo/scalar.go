@@ -22,6 +22,14 @@ type ColRef struct {
 	Typ lang.Type
 }
 
+func (c *ColRef) ChildCount() int {
+	return 0
+}
+
+func (c *ColRef) Child(i int) Expr {
+	panic("no children")
+}
+
 func (c *ColRef) Type() lang.Type {
 	return c.Typ
 }
@@ -29,6 +37,14 @@ func (c *ColRef) Type() lang.Type {
 // TODO: remove this wrapper
 type Constant struct {
 	D lang.Datum
+}
+
+func (c *Constant) ChildCount() int {
+	return 0
+}
+
+func (c *Constant) Child(i int) Expr {
+	panic("no children")
 }
 
 func (c *Constant) Type() lang.Type {
@@ -49,6 +65,14 @@ func (c *Constant) Type() lang.Type {
 type Func struct {
 	Op   lang.Func
 	Args []ScalarExpr
+}
+
+func (f *Func) ChildCount() int {
+	return len(f.Args)
+}
+
+func (f *Func) Child(i int) Expr {
+	return f.Args[i]
 }
 
 func (f *Func) Type() lang.Type {
