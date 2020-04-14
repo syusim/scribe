@@ -7,6 +7,7 @@ type Expr interface {
 
 // TODO: this is actually a group, but not sure how to name them appropriately.
 // Also not sure how to structure this right so that other packages and inspect it sanely.
+// TODO/idea: what if every expr had its children directly, but also had a pointer to a metadata thing?
 type RelExpr struct {
 	E relExpr
 

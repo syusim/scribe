@@ -64,10 +64,9 @@ plan
 -> Join
  -> Scan [1 2 3]
  -> Scan [4 5 6]
- -> And
-  -> Func (=)
-   -> ColRef (5)
-   -> Constant (3)
-  -> Func (=)
-   -> ColRef (1)
-   -> ColRef (4)
+ -> Func (=)
+  -> ColRef (5)
+  -> Constant (3)
+ -> Func (=)
+  -> ColRef (1)
+  -> ColRef (4)

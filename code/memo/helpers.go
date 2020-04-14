@@ -11,11 +11,11 @@ func freeCols(s ScalarExpr) opt.ColSet {
 	return cols
 }
 
-func extractBoundConditions(r *RelExpr, e []ScalarExpr) (bool, []ScalarExpr, []ScalarExpr) {
-	// buh
-	cols := freeCols(e)
-	return cols.SubsetOf(r.Props.OutputCols)
-}
+// func extractBoundConditions(r *RelExpr, e []ScalarExpr) (bool, []ScalarExpr, []ScalarExpr) {
+// 	// buh
+// 	cols := freeCols(e)
+// 	return cols.SubsetOf(r.Props.OutputCols)
+// }
 
 func eqConst(s ScalarExpr, d lang.Datum) bool {
 	if c, ok := s.(*Constant); ok {
