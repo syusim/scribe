@@ -10,6 +10,9 @@ type Datum interface {
 
 	Format(buf *bytes.Buffer)
 
+	// this should actually be the expr thing
+	Type() Type
+
 	// To meet the exec.ScalarExpr interface.
 	Eval(binding Row) (Datum, error)
 }
@@ -30,6 +33,10 @@ func (d DInt) Eval(_ Row) (Datum, error) {
 	return d, nil
 }
 
+func (d DInt) Type() Type {
+	return Int
+}
+
 type DString string
 
 func (d DString) Format(buf *bytes.Buffer) {
@@ -44,6 +51,10 @@ func (d DString) String() string {
 
 func (d DString) Eval(_ Row) (Datum, error) {
 	return d, nil
+}
+
+func (d DString) Type() Type {
+	return String
 }
 
 type DBool bool
@@ -64,6 +75,10 @@ func (d DBool) String() string {
 
 func (d DBool) Eval(_ Row) (Datum, error) {
 	return d, nil
+}
+
+func (d DBool) Type() Type {
+	return Bool
 }
 
 type CmpResult int

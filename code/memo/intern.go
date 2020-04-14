@@ -75,6 +75,26 @@ func (m *Memo) internConstant(x Constant) *Constant {
 	return p
 }
 
+func (m *Memo) internAnd(x And) *And {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*And)
+	}
+	p := &x
+	m.hashes[h] = p
+	return p
+}
+
+func (m *Memo) internPlus(x Plus) *Plus {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*Plus)
+	}
+	p := &x
+	m.hashes[h] = p
+	return p
+}
+
 func (m *Memo) internFunc(x Func) *Func {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
@@ -91,6 +111,7 @@ func (m *Memo) internScan(x Scan) *RelExpr {
 		return v.(*RelExpr)
 	}
 	p := &RelExpr{E: &x}
+	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
@@ -101,6 +122,7 @@ func (m *Memo) internSelect(x Select) *RelExpr {
 		return v.(*RelExpr)
 	}
 	p := &RelExpr{E: &x}
+	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
@@ -111,6 +133,7 @@ func (m *Memo) internProject(x Project) *RelExpr {
 		return v.(*RelExpr)
 	}
 	p := &RelExpr{E: &x}
+	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
@@ -121,6 +144,7 @@ func (m *Memo) internJoin(x Join) *RelExpr {
 		return v.(*RelExpr)
 	}
 	p := &RelExpr{E: &x}
+	buildProps(p)
 	m.hashes[h] = p
 	return p
 }

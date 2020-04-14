@@ -5,6 +5,7 @@ import (
 
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/exec"
+	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
 	"github.com/justinj/scribe/code/opt"
 )
@@ -47,6 +48,38 @@ func (b *builder) buildScalar(e memo.ScalarExpr, m opt.ColMap) (exec.ScalarExpr,
 			Op:   s.Op,
 			Args: args,
 		}, nil
+		// TODO: collapse these.
+	case *memo.Plus:
+		left, err := b.buildScalar(s.Left, m)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := b.buildScalar(s.Right, m)
+		if err != nil {
+			return nil, err
+		}
+
+		return &exec.FuncInvocation{
+			Op:   lang.Plus,
+			Args: []exec.ScalarExpr{left, right},
+		}, nil
+
+	case *memo.And:
+		left, err := b.buildScalar(s.Left, m)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := b.buildScalar(s.Right, m)
+		if err != nil {
+			return nil, err
+		}
+
+		return &exec.FuncInvocation{
+			Op:   lang.And,
+			Args: []exec.ScalarExpr{left, right},
+		}, nil
 
 	default:
 		panic(fmt.Sprintf("unhandled: %T", s))
@@ -83,9 +116,17 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			return nil, opt.ColMap{}, err
 		}
 
-		pred, err := b.buildScalar(o.Filter, m)
-		if err != nil {
-			return nil, opt.ColMap{}, err
+		// TODO: one unified scalar repr 2020
+		var pred exec.ScalarExpr = lang.DBool(true)
+		for _, p := range o.Filter {
+			next, err := b.buildScalar(p, m)
+			if err != nil {
+				return nil, opt.ColMap{}, err
+			}
+			pred = &exec.FuncInvocation{
+				Op:   lang.And,
+				Args: []exec.ScalarExpr{pred, next},
+			}
 		}
 
 		return exec.Select(in, pred), m, nil
@@ -111,15 +152,22 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			m.Set(from, to+leftMap.Len())
 		})
 
-		on, err := b.buildScalar(o.On, m)
-		if err != nil {
-			return nil, opt.ColMap{}, err
+		var pred exec.ScalarExpr = lang.DBool(true)
+		for _, p := range o.On {
+			next, err := b.buildScalar(p, m)
+			if err != nil {
+				return nil, opt.ColMap{}, err
+			}
+			pred = &exec.FuncInvocation{
+				Op:   lang.And,
+				Args: []exec.ScalarExpr{pred, next},
+			}
 		}
 
 		// TODO: make a real join operator!
 		return exec.Select(
 			exec.Cross(left, right),
-			on,
+			pred,
 		), m, nil
 	case *memo.Project:
 		in, m, err := b.Build(o.Input)

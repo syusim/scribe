@@ -72,7 +72,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return b.memo.Select(input, filter), s, nil
+		return b.memo.Select(input, []memo.ScalarExpr{filter}), s, nil
 	case *ast.Join:
 		left, leftScope, err := b.Build(a.Left)
 		if err != nil {
@@ -91,7 +91,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 			return nil, nil, err
 		}
 
-		return b.memo.Join(left, right, on), s, nil
+		return b.memo.Join(left, right, []memo.ScalarExpr{on}), s, nil
 	case *ast.Project:
 		in, inScope, err := b.Build(a.Input)
 		if err != nil {

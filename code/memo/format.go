@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type formatter struct {
@@ -21,7 +19,6 @@ func Format(e Expr) string {
 			buf.WriteByte(' ')
 		}
 		buf.WriteString("-> ")
-		spew.Dump(e)
 		if r, ok := e.(*RelExpr); ok {
 			e = r.E
 		}

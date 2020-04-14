@@ -20,11 +20,11 @@ func (s *Scan) Child(i int) Expr {
 type Join struct {
 	Left  *RelExpr
 	Right *RelExpr
-	On    ScalarExpr
+	On    []ScalarExpr
 }
 
 func (j *Join) ChildCount() int {
-	return 3
+	return 2 + len(j.On)
 }
 
 func (j *Join) Child(i int) Expr {
@@ -33,10 +33,8 @@ func (j *Join) Child(i int) Expr {
 		return j.Left
 	case 1:
 		return j.Right
-	case 2:
-		return j.On
 	default:
-		panic("out of bound")
+		return j.On[i-2]
 	}
 }
 
@@ -63,20 +61,18 @@ func (p *Project) Child(i int) Expr {
 type Select struct {
 	Input *RelExpr
 	// TODO: unify terminology here: is it filter or predicate?
-	Filter ScalarExpr
+	Filter []ScalarExpr
 }
 
 func (s *Select) ChildCount() int {
-	return 2
+	return 1 + len(s.Filter)
 }
 
 func (s *Select) Child(i int) Expr {
 	switch i {
 	case 0:
 		return s.Input
-	case 1:
-		return s.Filter
 	default:
-		panic("out of bounds")
+		return s.Filter[i-1]
 	}
 }

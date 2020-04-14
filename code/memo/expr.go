@@ -9,6 +9,8 @@ type Expr interface {
 // Also not sure how to structure this right so that other packages and inspect it sanely.
 type RelExpr struct {
 	E relExpr
+
+	Props Props
 }
 
 // TODO: these types seem extremely wonky.

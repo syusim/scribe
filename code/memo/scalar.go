@@ -61,6 +61,54 @@ func (c *Constant) Type() lang.Type {
 	}
 }
 
+type Plus struct {
+	Left  ScalarExpr
+	Right ScalarExpr
+}
+
+func (e *Plus) ChildCount() int {
+	return 2
+}
+
+func (e *Plus) Child(i int) Expr {
+	switch i {
+	case 0:
+		return e.Left
+	case 1:
+		return e.Right
+	default:
+		panic("out of bounds")
+	}
+}
+
+func (e *Plus) Type() lang.Type {
+	return lang.Int
+}
+
+type And struct {
+	Left  ScalarExpr
+	Right ScalarExpr
+}
+
+func (e *And) ChildCount() int {
+	return 2
+}
+
+func (e *And) Child(i int) Expr {
+	switch i {
+	case 0:
+		return e.Left
+	case 1:
+		return e.Right
+	default:
+		panic("out of bounds")
+	}
+}
+
+func (e *And) Type() lang.Type {
+	return lang.Bool
+}
+
 // TODO: Should these each be their own ops (probably)?
 type Func struct {
 	Op   lang.Func

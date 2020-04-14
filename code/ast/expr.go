@@ -24,7 +24,8 @@ func (c ColumnReference) Format(buf *bytes.Buffer) {
 }
 
 type ScalarFunc struct {
-	Op   lang.Func
+	Op lang.Func
+
 	Args []Expr
 }
 

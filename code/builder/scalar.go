@@ -39,17 +39,34 @@ func (b *builder) BuildScalar(e ast.Expr, scope *scope) (memo.ScalarExpr, error)
 			if args[0].Type() != args[1].Type() {
 				return nil, fmt.Errorf("arguments to = must be same type, got (= %v %v)", args[0].Type(), args[1].Type())
 			}
-		case lang.Plus, lang.Minus, lang.Times:
+		case lang.And:
+			if len(args) != 2 {
+				return nil, fmt.Errorf("and takes 2 args")
+			}
+			for _, arg := range args {
+				if arg.Type() != lang.Bool {
+					return nil, fmt.Errorf("args to %s must be int", a.Op)
+				}
+			}
+			return b.memo.And(args[0], args[1]), nil
+		case lang.Plus:
+			if len(args) != 2 {
+				return nil, fmt.Errorf("+ takes 2 args")
+			}
+			for _, arg := range args {
+				if arg.Type() != lang.Int {
+					return nil, fmt.Errorf("args to %s must be int", a.Op)
+				}
+			}
+			return b.memo.Plus(args[0], args[1]), nil
+		case lang.Minus, lang.Times:
 			for _, arg := range args {
 				if arg.Type() != lang.Int {
 					return nil, fmt.Errorf("args to %s must be int", a.Op)
 				}
 			}
 		}
-		return &memo.Func{
-			Op:   a.Op,
-			Args: args,
-		}, nil
+		return b.memo.Func(a.Op, args), nil
 	case lang.Datum:
 		return b.memo.Constant(a), nil
 	default:

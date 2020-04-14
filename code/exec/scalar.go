@@ -42,6 +42,13 @@ func (f *FuncInvocation) Eval(binding lang.Row) (lang.Datum, error) {
 			sum += int(x.(lang.DInt))
 		}
 		return lang.DInt(sum), nil
+	case lang.And:
+		for _, x := range evaledArgs {
+			if x == lang.DBool(false) {
+				return lang.DBool(false), nil
+			}
+		}
+		return lang.DBool(true), nil
 	default:
 		panic(fmt.Sprintf("unhandled operator %v", f.Op))
 	}
