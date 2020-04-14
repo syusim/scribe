@@ -53,7 +53,7 @@ func (b *builder) buildScalar(e memo.ScalarExpr, m opt.ColMap) (exec.ScalarExpr,
 	}
 }
 
-func (b *builder) Build(e memo.RelExpr) (exec.Node, opt.ColMap, error) {
+func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 	switch o := e.E.(type) {
 	case *memo.Scan:
 		tab, ok := b.cat.TableByName(o.TableName)

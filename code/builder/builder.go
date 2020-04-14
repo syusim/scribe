@@ -44,12 +44,12 @@ func New(cat *cat.Catalog) *builder {
 }
 
 // TODO: extract each arm
-func (b *builder) Build(e ast.RelExpr) (memo.RelExpr, *scope, error) {
+func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 	switch a := e.(type) {
 	case *ast.TableRef:
 		tab, ok := b.cat.TableByName(a.Name)
 		if !ok {
-			return memo.RelExpr{}, nil, fmt.Errorf("no table named %q", a.Name)
+			return nil, nil, fmt.Errorf("no table named %q", a.Name)
 		}
 
 		cols := make([]opt.ColumnID, tab.ColumnCount())
@@ -66,36 +66,36 @@ func (b *builder) Build(e ast.RelExpr) (memo.RelExpr, *scope, error) {
 	case *ast.Select:
 		input, s, err := b.Build(a.Input)
 		if err != nil {
-			return memo.RelExpr{}, nil, err
+			return nil, nil, err
 		}
 		filter, err := b.BuildScalar(a.Predicate, s)
 		if err != nil {
-			return memo.RelExpr{}, nil, err
+			return nil, nil, err
 		}
 		return b.memo.Select(input, filter), s, nil
 	case *ast.Join:
 		left, leftScope, err := b.Build(a.Left)
 		if err != nil {
-			return memo.RelExpr{}, nil, err
+			return nil, nil, err
 		}
 
 		right, rightScope, err := b.Build(a.Right)
 		if err != nil {
-			return memo.RelExpr{}, nil, err
+			return nil, nil, err
 		}
 
 		s := appendScopes(leftScope, rightScope)
 
 		on, err := b.BuildScalar(a.On, s)
 		if err != nil {
-			return memo.RelExpr{}, nil, err
+			return nil, nil, err
 		}
 
 		return b.memo.Join(left, right, on), s, nil
 	case *ast.Project:
 		in, inScope, err := b.Build(a.Input)
 		if err != nil {
-			return memo.RelExpr{}, nil, err
+			return nil, nil, err
 		}
 
 		exprs := make([]memo.ScalarExpr, len(a.Exprs))
@@ -106,7 +106,7 @@ func (b *builder) Build(e ast.RelExpr) (memo.RelExpr, *scope, error) {
 		for i, e := range a.Exprs {
 			proj, err := b.BuildScalar(e, inScope)
 			if err != nil {
-				return memo.RelExpr{}, nil, err
+				return nil, nil, err
 			}
 			exprs[i] = proj
 			outCols[i] = b.addCol(a.Aliases[i], proj.Type())

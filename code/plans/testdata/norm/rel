@@ -25,6 +25,15 @@ plan
   -> Constant (3)
 
 plan
+(project xyz [(+ x 0)])
+----
+-> Project
+ -> Scan [1 2 3]
+ -> Func (+)
+  -> ColRef (1)
+  -> Constant (0)
+
+plan
 (join abc xyz (= a x))
 ----
 -> Join
@@ -33,3 +42,19 @@ plan
  -> Func (=)
   -> ColRef (1)
   -> ColRef (4)
+
+plan
+(select
+ (join abc xyz (= a x))
+ (= y 3))
+----
+-> Select
+ -> Join
+  -> Scan [1 2 3]
+  -> Scan [4 5 6]
+  -> Func (=)
+   -> ColRef (1)
+   -> ColRef (4)
+ -> Func (=)
+  -> ColRef (5)
+  -> Constant (3)

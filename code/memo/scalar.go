@@ -34,7 +34,7 @@ func (c *ColRef) Type() lang.Type {
 	return c.Typ
 }
 
-// TODO: remove this wrapper
+// TODO: remove this wrapper?
 type Constant struct {
 	D lang.Datum
 }

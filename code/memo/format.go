@@ -22,7 +22,7 @@ func Format(e Expr) string {
 		}
 		buf.WriteString("-> ")
 		spew.Dump(e)
-		if r, ok := e.(RelExpr); ok {
+		if r, ok := e.(*RelExpr); ok {
 			e = r.E
 		}
 		buf.WriteString(reflect.TypeOf(e).Elem().Name())

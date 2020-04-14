@@ -51,9 +51,7 @@ func (b *builder) BuildScalar(e ast.Expr, scope *scope) (memo.ScalarExpr, error)
 			Args: args,
 		}, nil
 	case lang.Datum:
-		return &memo.Constant{
-			D: a,
-		}, nil
+		return b.memo.Constant(a), nil
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e))
 	}

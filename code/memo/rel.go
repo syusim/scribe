@@ -18,8 +18,8 @@ func (s *Scan) Child(i int) Expr {
 }
 
 type Join struct {
-	Left  RelExpr
-	Right RelExpr
+	Left  *RelExpr
+	Right *RelExpr
 	On    ScalarExpr
 }
 
@@ -41,7 +41,7 @@ func (j *Join) Child(i int) Expr {
 }
 
 type Project struct {
-	Input RelExpr
+	Input *RelExpr
 
 	ColIDs      []opt.ColumnID
 	Projections []ScalarExpr
@@ -61,7 +61,7 @@ func (p *Project) Child(i int) Expr {
 }
 
 type Select struct {
-	Input RelExpr
+	Input *RelExpr
 	// TODO: unify terminology here: is it filter or predicate?
 	Filter ScalarExpr
 }
