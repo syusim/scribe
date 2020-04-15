@@ -13,7 +13,7 @@ type Datum interface {
 	// this should actually be the expr thing
 	Type() Type
 
-	// To meet the exec.ScalarExpr interface.
+	// To meet the scalar.Expr interface.
 	Eval(binding Row) (Datum, error)
 }
 
