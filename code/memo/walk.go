@@ -13,8 +13,7 @@ func (m *Memo) Walk(in lang.Expr, f func(e lang.Expr) lang.Expr) lang.Expr {
 	// All the 0-child ops.
 	case *scalar.ColRef, *scalar.ExecColRef,
 		*scalar.Constant:
-		r := f(in)
-		return r
+		return f(in)
 	case *scalar.Plus:
 		left := m.Walk(e.Left, f).(scalar.Expr)
 		right := m.Walk(e.Right, f).(scalar.Expr)
