@@ -4,7 +4,10 @@ package exec
 import (
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
+	"github.com/justinj/scribe/code/scalar"
 ) //)
+
+type ScalarExpr scalar.Expr
 
 //(node-interface
 type Node interface {
@@ -54,7 +57,7 @@ func (s *select1) Next() (lang.Row, bool) {
 			return nil, false
 		}
 		var err error
-		evaled, err = s.p.Eval(next)
+		evaled, err = scalar.Eval(s.p, next)
 		if err != nil {
 			// TODO: fixme
 			panic(err)
@@ -87,7 +90,7 @@ func (p *project) Next() (lang.Row, bool) {
 	}
 	row := make(lang.Row, len(p.exprs))
 	for i := range p.exprs {
-		evaled, err := p.exprs[i].Eval(next)
+		evaled, err := scalar.Eval(p.exprs[i], next)
 		if err != nil {
 			// TODO: fixme
 			panic("no good chief")

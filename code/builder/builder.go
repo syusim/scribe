@@ -8,6 +8,7 @@ import (
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
 	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 type colInfo struct {
@@ -36,10 +37,10 @@ func (b *builder) addCol(name string, typ lang.Type) opt.ColumnID {
 	return id
 }
 
-func New(cat *cat.Catalog) *builder {
+func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	return &builder{
 		cat:  cat,
-		memo: memo.New(),
+		memo: memo,
 	}
 }
 
@@ -72,7 +73,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return b.memo.Select(input, []memo.ScalarExpr{filter}), s, nil
+		return b.memo.Select(input, []scalar.Expr{filter}), s, nil
 	case *ast.Join:
 		left, leftScope, err := b.Build(a.Left)
 		if err != nil {
@@ -91,14 +92,14 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 			return nil, nil, err
 		}
 
-		return b.memo.Join(left, right, []memo.ScalarExpr{on}), s, nil
+		return b.memo.Join(left, right, []scalar.Expr{on}), s, nil
 	case *ast.Project:
 		in, inScope, err := b.Build(a.Input)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		exprs := make([]memo.ScalarExpr, len(a.Exprs))
+		exprs := make([]scalar.Expr, len(a.Exprs))
 		outCols := make([]opt.ColumnID, len(exprs))
 
 		outScope := newScope()

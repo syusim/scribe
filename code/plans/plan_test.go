@@ -40,7 +40,7 @@ func TestNorm(t *testing.T) {
 				if err != nil {
 					return fmt.Sprintf("error: %s", err)
 				}
-				b := builder.New(catalog)
+				b := builder.New(catalog, memo.New())
 				e, err := b.BuildScalar(expr, nil)
 				if err != nil {
 					return fmt.Sprintf("error: %s", err)
@@ -51,7 +51,7 @@ func TestNorm(t *testing.T) {
 				if err != nil {
 					return fmt.Sprintf("error: %s", err)
 				}
-				b := builder.New(catalog)
+				b := builder.New(catalog, memo.New())
 				e, _, err := b.Build(expr)
 				if err != nil {
 					return fmt.Sprintf("error: %s", err)

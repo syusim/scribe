@@ -3,9 +3,10 @@ package memo
 import (
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
 )
 
-func freeCols(s ScalarExpr) opt.ColSet {
+func freeCols(s scalar.Expr) opt.ColSet {
 	var cols opt.ColSet
 	computeFreeCols(cols, s)
 	return cols
@@ -17,8 +18,8 @@ func freeCols(s ScalarExpr) opt.ColSet {
 // 	return cols.SubsetOf(r.Props.OutputCols)
 // }
 
-func eqConst(s ScalarExpr, d lang.Datum) bool {
-	if c, ok := s.(*Constant); ok {
+func eqConst(s scalar.Expr, d lang.Datum) bool {
+	if c, ok := s.(*scalar.Constant); ok {
 		if c.D.Type() != d.Type() {
 			return false
 		}

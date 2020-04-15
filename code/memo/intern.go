@@ -7,6 +7,7 @@ import (
 
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 func hashField(buf *bytes.Buffer, f interface{}) {
@@ -24,9 +25,9 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 			}
 			fmt.Fprintf(buf, "%d", c)
 		}
-	case ScalarExpr:
+	case scalar.Expr:
 		fmt.Fprintf(buf, "%p", e)
-	case []ScalarExpr:
+	case []scalar.Expr:
 		for _, c := range e {
 			fmt.Fprintf(buf, "%p", c)
 		}
@@ -55,50 +56,50 @@ func hash(x interface{}) string {
 }
 
 // TODO: codegen these
-func (m *Memo) internColRef(x ColRef) *ColRef {
+func (m *Memo) internColRef(x scalar.ColRef) *scalar.ColRef {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*ColRef)
+		return v.(*scalar.ColRef)
 	}
 	p := &x
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internConstant(x Constant) *Constant {
+func (m *Memo) internConstant(x scalar.Constant) *scalar.Constant {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*Constant)
+		return v.(*scalar.Constant)
 	}
 	p := &x
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internAnd(x And) *And {
+func (m *Memo) internAnd(x scalar.And) *scalar.And {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*And)
+		return v.(*scalar.And)
 	}
 	p := &x
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internPlus(x Plus) *Plus {
+func (m *Memo) internPlus(x scalar.Plus) *scalar.Plus {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*Plus)
+		return v.(*scalar.Plus)
 	}
 	p := &x
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internFunc(x Func) *Func {
+func (m *Memo) internFunc(x scalar.Func) *scalar.Func {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*Func)
+		return v.(*scalar.Func)
 	}
 	p := &x
 	m.hashes[h] = p

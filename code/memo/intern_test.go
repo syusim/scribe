@@ -5,6 +5,7 @@ import (
 
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 func TestHash(t *testing.T) {
@@ -19,15 +20,15 @@ func TestHash(t *testing.T) {
 			},
 			"Scan/abc/1,2,3",
 		}, {
-			ColRef{
+			scalar.ColRef{
 				Id:  1,
 				Typ: lang.Int,
 			},
 			"ColRef/1/int",
 		}, {
-			Func{
+			scalar.Func{
 				Op:   lang.Plus,
-				Args: []ScalarExpr{},
+				Args: []scalar.Expr{},
 			},
 			"Func/+/",
 		}, {

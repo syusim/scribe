@@ -1,6 +1,9 @@
 package memo
 
-import "github.com/justinj/scribe/code/opt"
+import (
+	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
+)
 
 // TODO: pull this into a pkg/file
 type Props struct {
@@ -29,12 +32,12 @@ func buildProps(r *RelExpr) {
 	}
 }
 
-func computeFreeCols(o opt.ColSet, s ScalarExpr) {
-	if c, ok := s.(*ColRef); ok {
+func computeFreeCols(o opt.ColSet, s scalar.Expr) {
+	if c, ok := s.(*scalar.ColRef); ok {
 		o.Add(c.Id)
 	} else {
 		for i, n := 0, s.ChildCount(); i < n; i++ {
-			computeFreeCols(o, s.Child(i).(ScalarExpr))
+			computeFreeCols(o, s.Child(i).(scalar.Expr))
 		}
 	}
 }

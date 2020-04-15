@@ -3,6 +3,7 @@ package memo
 import (
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 func (m *Memo) Scan(tableName string, cols []opt.ColumnID) *RelExpr {
@@ -12,7 +13,7 @@ func (m *Memo) Scan(tableName string, cols []opt.ColumnID) *RelExpr {
 	})
 }
 
-func (m *Memo) Join(left, right *RelExpr, on []ScalarExpr) *RelExpr {
+func (m *Memo) Join(left, right *RelExpr, on []scalar.Expr) *RelExpr {
 	return m.internJoin(Join{
 		Left:  left,
 		Right: right,
@@ -24,7 +25,7 @@ func (m *Memo) Join(left, right *RelExpr, on []ScalarExpr) *RelExpr {
 func (m *Memo) Project(
 	input *RelExpr,
 	colIDs []opt.ColumnID,
-	projections []ScalarExpr,
+	projections []scalar.Expr,
 ) *RelExpr {
 	return m.internProject(Project{
 		Input:       input,
@@ -33,10 +34,10 @@ func (m *Memo) Project(
 	})
 }
 
-func (m *Memo) Select(input *RelExpr, filter []ScalarExpr) *RelExpr {
+func (m *Memo) Select(input *RelExpr, filter []scalar.Expr) *RelExpr {
 	// MergeSelectJoin
 	if j, ok := input.E.(*Join); ok {
-		newFilter := make([]ScalarExpr, len(filter)+len(j.On))
+		newFilter := make([]scalar.Expr, len(filter)+len(j.On))
 		for i := range filter {
 			newFilter[i] = filter[i]
 		}
@@ -56,15 +57,15 @@ func (m *Memo) Select(input *RelExpr, filter []ScalarExpr) *RelExpr {
 	})
 }
 
-func (m *Memo) Constant(d lang.Datum) ScalarExpr {
-	return m.internConstant(Constant{d})
+func (m *Memo) Constant(d lang.Datum) scalar.Expr {
+	return m.internConstant(scalar.Constant{d})
 }
 
-func (m *Memo) ColRef(id opt.ColumnID, typ lang.Type) ScalarExpr {
-	return m.internColRef(ColRef{id, typ})
+func (m *Memo) ColRef(id opt.ColumnID, typ lang.Type) scalar.Expr {
+	return m.internColRef(scalar.ColRef{id, typ})
 }
 
-func (m *Memo) Plus(left, right ScalarExpr) ScalarExpr {
+func (m *Memo) Plus(left, right scalar.Expr) scalar.Expr {
 	// FoldZeroPlus
 	if eqConst(left, lang.DInt(0)) {
 		return right
@@ -76,7 +77,7 @@ func (m *Memo) Plus(left, right ScalarExpr) ScalarExpr {
 	}
 
 	// AssociatePlus
-	if l, ok := left.(*Plus); ok {
+	if l, ok := left.(*scalar.Plus); ok {
 		return m.Plus(
 			l.Left,
 			m.Plus(
@@ -86,12 +87,12 @@ func (m *Memo) Plus(left, right ScalarExpr) ScalarExpr {
 		)
 	}
 
-	return m.internPlus(Plus{left, right})
+	return m.internPlus(scalar.Plus{left, right})
 }
 
-func (m *Memo) And(left, right ScalarExpr) ScalarExpr {
+func (m *Memo) And(left, right scalar.Expr) scalar.Expr {
 	// AssociateAnd
-	if l, ok := left.(*And); ok {
+	if l, ok := left.(*scalar.And); ok {
 		return m.And(
 			l.Left,
 			m.And(
@@ -101,9 +102,9 @@ func (m *Memo) And(left, right ScalarExpr) ScalarExpr {
 		)
 	}
 
-	return m.internAnd(And{left, right})
+	return m.internAnd(scalar.And{left, right})
 }
 
-func (m *Memo) Func(op lang.Func, args []ScalarExpr) ScalarExpr {
-	return m.internFunc(Func{op, args})
+func (m *Memo) Func(op lang.Func, args []scalar.Expr) scalar.Expr {
+	return m.internFunc(scalar.Func{op, args})
 }

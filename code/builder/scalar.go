@@ -5,22 +5,22 @@ import (
 
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/memo"
+	"github.com/justinj/scribe/code/scalar"
 )
 
-func (b *builder) BuildScalar(e ast.Expr, scope *scope) (memo.ScalarExpr, error) {
+func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Expr, error) {
 	switch a := e.(type) {
 	case ast.ColumnReference:
 		id, typ, ok := scope.resolve(string(a))
 		if !ok {
 			return nil, fmt.Errorf("no column named %q", a)
 		}
-		return &memo.ColRef{
+		return &scalar.ColRef{
 			Id:  id,
 			Typ: typ,
 		}, nil
 	case *ast.ScalarFunc:
-		args := make([]memo.ScalarExpr, len(a.Args))
+		args := make([]scalar.Expr, len(a.Args))
 		// TODO: i'm very inconsistent in my use of the two
 		// arg-syntax, fix that up.
 		for i := range a.Args {

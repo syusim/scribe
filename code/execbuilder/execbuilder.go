@@ -3,87 +3,38 @@ package execbuilder
 import (
 	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
 	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 type builder struct {
-	cat *cat.Catalog
+	cat  *cat.Catalog
+	memo *memo.Memo
 }
 
-func New(cat *cat.Catalog) *builder {
+func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	return &builder{
-		cat: cat,
+		cat:  cat,
+		memo: memo,
 	}
 }
 
-// TODO: we should get rid of this, just walk the tree, keep
-// everything the same, but replace the absolute column references
-// with ordinal references. bingo bango
-func (b *builder) buildScalar(e memo.ScalarExpr, m opt.ColMap) (exec.ScalarExpr, error) {
-	switch s := e.(type) {
-	case *memo.Constant:
-		return s.D, nil
-	case *memo.ColRef:
-		i, ok := m.Get(s.Id)
-		if !ok {
-			panic(fmt.Sprintf("no column with id %d", s.Id))
-		}
-		return &exec.ColRef{
-			Idx: i,
-		}, nil
-	case *memo.Func:
-		args := make([]exec.ScalarExpr, len(s.Args))
-		for i := range s.Args {
-			a, err := b.buildScalar(s.Args[i], m)
-			if err != nil {
-				return nil, err
+func (b *builder) buildScalar(e scalar.Expr, m opt.ColMap) (exec.ScalarExpr, error) {
+	return exec.ScalarExpr(b.memo.Walk(e, func(in lang.Expr) lang.Expr {
+		if ref, ok := in.(*scalar.ColRef); ok {
+			idx, _ := m.Get(ref.Id)
+			return &scalar.ExecColRef{
+				Idx: idx,
+				Typ: ref.Typ,
 			}
-			args[i] = a
 		}
-		return &exec.FuncInvocation{
-			Op:   s.Op,
-			Args: args,
-		}, nil
-		// TODO: collapse these.
-	case *memo.Plus:
-		left, err := b.buildScalar(s.Left, m)
-		if err != nil {
-			return nil, err
-		}
-
-		right, err := b.buildScalar(s.Right, m)
-		if err != nil {
-			return nil, err
-		}
-
-		return &exec.FuncInvocation{
-			Op:   lang.Plus,
-			Args: []exec.ScalarExpr{left, right},
-		}, nil
-
-	case *memo.And:
-		left, err := b.buildScalar(s.Left, m)
-		if err != nil {
-			return nil, err
-		}
-
-		right, err := b.buildScalar(s.Right, m)
-		if err != nil {
-			return nil, err
-		}
-
-		return &exec.FuncInvocation{
-			Op:   lang.And,
-			Args: []exec.ScalarExpr{left, right},
-		}, nil
-
-	default:
-		panic(fmt.Sprintf("unhandled: %T", s))
-	}
+		return in
+	}).(scalar.Expr)), nil
 }
 
 func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
@@ -123,11 +74,10 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			if err != nil {
 				return nil, opt.ColMap{}, err
 			}
-			pred = &exec.FuncInvocation{
-				Op:   lang.And,
-				Args: []exec.ScalarExpr{pred, next},
-			}
+			pred = &scalar.And{pred, next}
 		}
+
+		spew.Dump(pred)
 
 		return exec.Select(in, pred), m, nil
 
@@ -158,10 +108,7 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			if err != nil {
 				return nil, opt.ColMap{}, err
 			}
-			pred = &exec.FuncInvocation{
-				Op:   lang.And,
-				Args: []exec.ScalarExpr{pred, next},
-			}
+			pred = &scalar.And{pred, next}
 		}
 
 		// TODO: make a real join operator!

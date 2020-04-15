@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+type Expr interface {
+	ChildCount() int
+	Child(i int) Expr
+}
+
 type Type int
 
 const (

@@ -4,17 +4,20 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+
+	"github.com/justinj/scribe/code/lang"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 type formatter struct {
 }
 
 // TODO: make a real tree printer?
-func Format(e Expr) string {
+func Format(e lang.Expr) string {
 	var buf bytes.Buffer
 	depth := 0
-	var p func(e Expr)
-	p = func(e Expr) {
+	var p func(e lang.Expr)
+	p = func(e lang.Expr) {
 		for i := 0; i < depth; i++ {
 			buf.WriteByte(' ')
 		}
@@ -37,7 +40,7 @@ func Format(e Expr) string {
 	return buf.String()
 }
 
-func extra(buf *bytes.Buffer, e Expr) {
+func extra(buf *bytes.Buffer, e lang.Expr) {
 	switch o := e.(type) {
 	case *Scan:
 		buf.WriteString(" [")
@@ -48,11 +51,11 @@ func extra(buf *bytes.Buffer, e Expr) {
 			fmt.Fprintf(buf, "%d", c)
 		}
 		buf.WriteByte(']')
-	case *Func:
+	case *scalar.Func:
 		fmt.Fprintf(buf, " (%s)", o.Op)
-	case *Constant:
+	case *scalar.Constant:
 		fmt.Fprintf(buf, " (%s)", o.D)
-	case *ColRef:
+	case *scalar.ColRef:
 		fmt.Fprintf(buf, " (%d)", o.Id)
 	}
 }

@@ -29,6 +29,14 @@ func (d DInt) String() string {
 	return buf.String()
 }
 
+func (d DInt) Child(i int) Expr {
+	panic("no children")
+}
+
+func (d DInt) ChildCount() int {
+	return 0
+}
+
 func (d DInt) Eval(_ Row) (Datum, error) {
 	return d, nil
 }
@@ -47,6 +55,14 @@ func (d DString) String() string {
 	var buf bytes.Buffer
 	d.Format(&buf)
 	return buf.String()
+}
+
+func (d DString) Child(i int) Expr {
+	panic("no children")
+}
+
+func (d DString) ChildCount() int {
+	return 0
 }
 
 func (d DString) Eval(_ Row) (Datum, error) {
@@ -71,6 +87,14 @@ func (d DBool) String() string {
 	var buf bytes.Buffer
 	d.Format(&buf)
 	return buf.String()
+}
+
+func (d DBool) Child(i int) Expr {
+	panic("no children")
+}
+
+func (d DBool) ChildCount() int {
+	return 0
 }
 
 func (d DBool) Eval(_ Row) (Datum, error) {

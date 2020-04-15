@@ -1,13 +1,14 @@
 package memo
 
-type Expr interface {
-	ChildCount() int
-	Child(i int) Expr
+import "github.com/justinj/scribe/code/lang"
+
+type relExpr interface {
+	lang.Expr
 }
 
 // TODO: this is actually a group, but not sure how to name them appropriately.
 // Also not sure how to structure this right so that other packages and inspect it sanely.
-// TODO/idea: what if every expr had its children directly, but also had a pointer to a metadata thing?
+// TODO/idea: what if every expr had its children directly, but also was a thing in a map to a metadata thing?
 type RelExpr struct {
 	E relExpr
 
@@ -23,10 +24,6 @@ func (r RelExpr) ChildCount() int {
 	return r.E.ChildCount()
 }
 
-func (r RelExpr) Child(i int) Expr {
+func (r RelExpr) Child(i int) lang.Expr {
 	return r.E.Child(i)
-}
-
-type relExpr interface {
-	Expr
 }

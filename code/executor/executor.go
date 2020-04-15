@@ -9,6 +9,7 @@ import (
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/execbuilder"
+	"github.com/justinj/scribe/code/memo"
 	"github.com/justinj/scribe/code/opt"
 )
 
@@ -43,13 +44,15 @@ func (e *executor) Run(cmd string) (Result, error) {
 		)
 		return Result{Msg: "ok"}, nil
 	case *ast.RunQuery:
-		b := builder.New(e.catalog)
+		mem := memo.New()
+
+		b := builder.New(e.catalog, mem)
 		rel, _, err := b.Build(c.Input)
 		if err != nil {
 			return Result{}, err
 		}
 
-		eb := execbuilder.New(e.catalog)
+		eb := execbuilder.New(e.catalog, mem)
 		plan, _, err := eb.Build(rel)
 		if err != nil {
 			return Result{}, err

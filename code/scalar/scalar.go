@@ -1,4 +1,4 @@
-package memo
+package scalar
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"github.com/justinj/scribe/code/opt"
 )
 
-type ScalarExpr interface {
-	Expr
+type Expr interface {
+	lang.Expr
 
 	Type() lang.Type
 }
@@ -26,11 +26,28 @@ func (c *ColRef) ChildCount() int {
 	return 0
 }
 
-func (c *ColRef) Child(i int) Expr {
+func (c *ColRef) Child(i int) lang.Expr {
 	panic("no children")
 }
 
 func (c *ColRef) Type() lang.Type {
+	return c.Typ
+}
+
+type ExecColRef struct {
+	Idx int
+	Typ lang.Type
+}
+
+func (c *ExecColRef) ChildCount() int {
+	return 0
+}
+
+func (c *ExecColRef) Child(i int) lang.Expr {
+	panic("no children")
+}
+
+func (c *ExecColRef) Type() lang.Type {
 	return c.Typ
 }
 
@@ -43,7 +60,7 @@ func (c *Constant) ChildCount() int {
 	return 0
 }
 
-func (c *Constant) Child(i int) Expr {
+func (c *Constant) Child(i int) lang.Expr {
 	panic("no children")
 }
 
@@ -62,15 +79,15 @@ func (c *Constant) Type() lang.Type {
 }
 
 type Plus struct {
-	Left  ScalarExpr
-	Right ScalarExpr
+	Left  Expr
+	Right Expr
 }
 
 func (e *Plus) ChildCount() int {
 	return 2
 }
 
-func (e *Plus) Child(i int) Expr {
+func (e *Plus) Child(i int) lang.Expr {
 	switch i {
 	case 0:
 		return e.Left
@@ -86,15 +103,15 @@ func (e *Plus) Type() lang.Type {
 }
 
 type And struct {
-	Left  ScalarExpr
-	Right ScalarExpr
+	Left  Expr
+	Right Expr
 }
 
 func (e *And) ChildCount() int {
 	return 2
 }
 
-func (e *And) Child(i int) Expr {
+func (e *And) Child(i int) lang.Expr {
 	switch i {
 	case 0:
 		return e.Left
@@ -112,14 +129,14 @@ func (e *And) Type() lang.Type {
 // TODO: Should these each be their own ops (probably)?
 type Func struct {
 	Op   lang.Func
-	Args []ScalarExpr
+	Args []Expr
 }
 
 func (f *Func) ChildCount() int {
 	return len(f.Args)
 }
 
-func (f *Func) Child(i int) Expr {
+func (f *Func) Child(i int) lang.Expr {
 	return f.Args[i]
 }
 
