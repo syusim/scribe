@@ -20,9 +20,10 @@ plan
 ----
 -> Select
  -> Scan [1 2 3]
- -> Func (=)
-  -> ColRef (1)
-  -> Constant (3)
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> Constant (3)
 
 plan
 (project xyz
@@ -52,9 +53,28 @@ plan
 -> Join
  -> Scan [1 2 3]
  -> Scan [4 5 6]
- -> Func (=)
-  -> ColRef (1)
-  -> ColRef (4)
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> ColRef (4)
+
+plan
+(select
+ (join abc xyz (= a x))
+ (= b 3))
+----
+-> Join
+ -> Select
+  -> Scan [1 2 3]
+  -> Filters
+   -> Func (=)
+    -> ColRef (2)
+    -> Constant (3)
+ -> Scan [4 5 6]
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> ColRef (4)
 
 plan
 (select
@@ -63,10 +83,36 @@ plan
 ----
 -> Join
  -> Scan [1 2 3]
- -> Scan [4 5 6]
- -> Func (=)
-  -> ColRef (5)
-  -> Constant (3)
- -> Func (=)
-  -> ColRef (1)
-  -> ColRef (4)
+ -> Select
+  -> Scan [4 5 6]
+  -> Filters
+   -> Func (=)
+    -> ColRef (5)
+    -> Constant (3)
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> ColRef (4)
+
+plan
+(select
+ (join abc xyz (= a x))
+ (and (= y 3) (= c 3)))
+----
+-> Join
+ -> Select
+  -> Scan [1 2 3]
+  -> Filters
+   -> Func (=)
+    -> ColRef (3)
+    -> Constant (3)
+ -> Select
+  -> Scan [4 5 6]
+  -> Filters
+   -> Func (=)
+    -> ColRef (5)
+    -> Constant (3)
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> ColRef (4)

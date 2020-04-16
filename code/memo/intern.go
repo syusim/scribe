@@ -86,6 +86,16 @@ func (m *Memo) internAnd(x scalar.And) *scalar.And {
 	return p
 }
 
+func (m *Memo) internFilters(x scalar.Filters) *scalar.Filters {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*scalar.Filters)
+	}
+	p := &x
+	m.hashes[h] = p
+	return p
+}
+
 func (m *Memo) internPlus(x scalar.Plus) *scalar.Plus {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {

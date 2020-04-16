@@ -13,7 +13,25 @@ func (m *Memo) Scan(tableName string, cols []opt.ColumnID) *RelExpr {
 	})
 }
 
-func (m *Memo) Join(left, right *RelExpr, on []scalar.Expr) *RelExpr {
+func (m *Memo) matchRules(args []interface{}, rules []rule) lang.Expr {
+	for _, r := range rules {
+		if n := r(m, args); n != nil {
+			return n
+		}
+	}
+	return nil
+}
+
+func (m *Memo) Join(left, right *RelExpr, on scalar.Expr) *RelExpr {
+	if e := m.matchRules([]interface{}{left, right, on}, []rule{
+		WrapJoinConditionInFilters,
+		UnfoldJoinCondition,
+		PushFilterIntoJoinLeft,
+		PushFilterIntoJoinRight,
+	}); e != nil {
+		return e.(*RelExpr)
+	}
+
 	return m.internJoin(Join{
 		Left:  left,
 		Right: right,
@@ -34,20 +52,20 @@ func (m *Memo) Project(
 	})
 }
 
-func (m *Memo) Select(input *RelExpr, filter []scalar.Expr) *RelExpr {
+func (m *Memo) Select(input *RelExpr, filter scalar.Expr) *RelExpr {
+	if e := m.matchRules([]interface{}{input, filter}, []rule{
+		WrapSelectConditionInFilters,
+		UnfoldSelectCondition,
+	}); e != nil {
+		return e.(*RelExpr)
+	}
+
 	// MergeSelectJoin
 	if j, ok := input.E.(*Join); ok {
-		newFilter := make([]scalar.Expr, len(filter)+len(j.On))
-		for i := range filter {
-			newFilter[i] = filter[i]
-		}
-		for i := range j.On {
-			newFilter[i+len(filter)] = j.On[i]
-		}
 		return m.Join(
 			j.Left,
 			j.Right,
-			newFilter,
+			m.Filters(concat(j.On.(*scalar.Filters), filter.(*scalar.Filters))),
 		)
 	}
 
@@ -66,25 +84,12 @@ func (m *Memo) ColRef(id opt.ColumnID, typ lang.Type) scalar.Expr {
 }
 
 func (m *Memo) Plus(left, right scalar.Expr) scalar.Expr {
-	// FoldZeroPlus
-	if eqConst(left, lang.DInt(0)) {
-		return right
-	}
-
-	// FoldPlusZero
-	if eqConst(right, lang.DInt(0)) {
-		return left
-	}
-
-	// AssociatePlus
-	if l, ok := left.(*scalar.Plus); ok {
-		return m.Plus(
-			l.Left,
-			m.Plus(
-				l.Right,
-				right,
-			),
-		)
+	if e := m.matchRules([]interface{}{left, right}, []rule{
+		FoldZeroPlus,
+		FoldPlusZero,
+		AssociatePlus,
+	}); e != nil {
+		return e.(scalar.Expr)
 	}
 
 	return m.internPlus(scalar.Plus{left, right})
@@ -103,6 +108,10 @@ func (m *Memo) And(left, right scalar.Expr) scalar.Expr {
 	}
 
 	return m.internAnd(scalar.And{left, right})
+}
+
+func (m *Memo) Filters(args []scalar.Expr) scalar.Expr {
+	return m.internFilters(scalar.Filters{args})
 }
 
 func (m *Memo) Func(op lang.Func, args []scalar.Expr) scalar.Expr {

@@ -126,6 +126,22 @@ func (e *And) Type() lang.Type {
 	return lang.Bool
 }
 
+type Filters struct {
+	Filters []Expr
+}
+
+func (e *Filters) ChildCount() int {
+	return len(e.Filters)
+}
+
+func (e *Filters) Child(i int) lang.Expr {
+	return e.Filters[i]
+}
+
+func (e *Filters) Type() lang.Type {
+	return lang.Bool
+}
+
 // TODO: Should these each be their own ops (probably)?
 type Func struct {
 	Op   lang.Func

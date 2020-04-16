@@ -12,6 +12,14 @@ func MakeColSet() *ColSet {
 	}
 }
 
+func SetFromCols(cols ...ColumnID) *ColSet {
+	s := MakeColSet()
+	for _, col := range cols {
+		s.Add(col)
+	}
+	return s
+}
+
 func (c *ColSet) Add(col ColumnID) {
 	if c.elems == nil {
 		c.elems = make(map[ColumnID]struct{})
@@ -32,9 +40,21 @@ func (c *ColSet) ForEach(f func(c ColumnID)) {
 
 func (c *ColSet) SubsetOf(o ColSet) bool {
 	for e := range c.elems {
-		if _, ok := c.elems[e]; !ok {
+		if _, ok := o.elems[e]; !ok {
 			return false
 		}
 	}
 	return true
+}
+
+func (c *ColSet) UnionWith(o *ColSet) {
+	if o == nil || o.elems == nil {
+		return
+	}
+	if c.elems == nil {
+		c.elems = make(map[ColumnID]struct{})
+	}
+	for e := range o.elems {
+		c.Add(e)
+	}
 }

@@ -69,7 +69,7 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 
 		// TODO: one unified scalar repr 2020
 		var pred exec.ScalarExpr = lang.DBool(true)
-		for _, p := range o.Filter {
+		for _, p := range o.Filter.(*scalar.Filters).Filters {
 			next, err := b.buildScalar(p, m)
 			if err != nil {
 				return nil, opt.ColMap{}, err
@@ -103,7 +103,7 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 		})
 
 		var pred exec.ScalarExpr = lang.DBool(true)
-		for _, p := range o.On {
+		for _, p := range o.On.(*scalar.Filters).Filters {
 			next, err := b.buildScalar(p, m)
 			if err != nil {
 				return nil, opt.ColMap{}, err
