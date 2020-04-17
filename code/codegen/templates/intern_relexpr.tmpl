@@ -1,0 +1,10 @@
+func (m *Memo) intern{{ .Name }}(x {{ .Name }}) *RelExpr {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*RelExpr)
+	}
+	p := &RelExpr{E: &x}
+	buildProps(p)
+	m.hashes[h] = p
+	return p
+}

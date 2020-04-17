@@ -1,0 +1,17 @@
+type {{ .Name }} struct {
+  {{ range .Fields }}
+    {{ .Name }} {{ .Type }}
+  {{ end }}
+}
+
+func (e *{{ .Name }}) ChildCount() int {
+  {{ .ChildCount }}
+}
+
+func (e *{{ .Name }}) Child(i int) lang.Expr {
+  ??
+}
+
+func (e *{{ .Name }}) Type() lang.Type {
+  ??
+}

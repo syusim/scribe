@@ -1,0 +1,9 @@
+func (m *Memo) intern{{ .Name }}(x scalar.{{ .Name }}) *scalar.{{ .Name }} {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*scalar.{{ .Name }})
+	}
+	p := &x
+	m.hashes[h] = p
+	return p
+}
