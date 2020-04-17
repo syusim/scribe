@@ -102,6 +102,30 @@ func (e *Plus) Type() lang.Type {
 	return lang.Int
 }
 
+type Times struct {
+	Left  Expr
+	Right Expr
+}
+
+func (e *Times) ChildCount() int {
+	return 2
+}
+
+func (e *Times) Child(i int) lang.Expr {
+	switch i {
+	case 0:
+		return e.Left
+	case 1:
+		return e.Right
+	default:
+		panic("out of bounds")
+	}
+}
+
+func (e *Times) Type() lang.Type {
+	return lang.Int
+}
+
 type And struct {
 	Left  Expr
 	Right Expr

@@ -101,11 +101,23 @@ func (m *Memo) Plus(left, right scalar.Expr) scalar.Expr {
 		FoldZeroPlus,
 		FoldPlusZero,
 		AssociatePlus,
+
+		// Goofy rules to simplify one very specific case.
+		SimplifyPlusPlus,
+		SimplifyPlusTimes,
 	}); e != nil {
 		return e.(scalar.Expr)
 	}
 
 	return m.internPlus(scalar.Plus{left, right})
+}
+
+func (m *Memo) Times(left, right scalar.Expr) scalar.Expr {
+	if e := m.matchRules([]interface{}{left, right}, []rule{}); e != nil {
+		return e.(scalar.Expr)
+	}
+
+	return m.internTimes(scalar.Times{left, right})
 }
 
 func (m *Memo) And(left, right scalar.Expr) scalar.Expr {

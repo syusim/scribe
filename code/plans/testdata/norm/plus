@@ -1,0 +1,29 @@
+ddl
+(create-table abc
+  [[a int] [b int] [c int]])
+----
+ok
+
+ddl
+(create-table xyz
+  [[x int] [y int] [z int]])
+----
+ok
+
+plan
+(project abc [(+ 1 1)])
+----
+-> Project [4] []
+ -> Scan [1 2 3]
+ -> Times
+  -> Constant (2)
+  -> Constant (1)
+
+plan
+(project abc [(+ 1 (* 1 1))])
+----
+-> Project [4] []
+ -> Scan [1 2 3]
+ -> Times
+  -> Constant (2)
+  -> Constant (1)

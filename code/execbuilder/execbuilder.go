@@ -3,7 +3,6 @@ package execbuilder
 import (
 	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/lang"
@@ -95,8 +94,6 @@ func (b *builder) build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			}
 			pred = &scalar.And{pred, next}
 		}
-
-		spew.Dump(pred)
 
 		return exec.Select(in, pred), m, nil
 

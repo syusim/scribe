@@ -37,6 +37,32 @@ func AssociatePlus(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
+func SimplifyPlusPlus(m *Memo, args []interface{}) lang.Expr {
+	left, right := args[0].(scalar.Expr), args[1].(scalar.Expr)
+	if left == right {
+		return m.Times(
+			m.Constant(lang.DInt(2)),
+			left,
+		)
+	}
+	return nil
+}
+
+func SimplifyPlusTimes(m *Memo, args []interface{}) lang.Expr {
+	left, right := args[0].(scalar.Expr), args[1].(scalar.Expr)
+	if t, ok := right.(*scalar.Times); ok {
+		if t.Right == left {
+			if c, ok := t.Left.(*scalar.Constant); ok {
+				return m.Times(
+					m.Constant(lang.DInt(c.D.(lang.DInt)+1)),
+					t.Right,
+				)
+			}
+		}
+	}
+	return nil
+}
+
 // Join Rules.
 
 func WrapJoinConditionInFilters(m *Memo, args []interface{}) lang.Expr {
@@ -182,7 +208,7 @@ func MergeProjectProject(m *Memo, args []interface{}) lang.Expr {
 		// projections are also the same as before, but with:
 		// * columns we were passing through before being computed now
 		//   and
-		// * input columns being inlined into our projections (not done yet).
+		// * input columns being inlined into our projections.
 		newProjections := make([]scalar.Expr, len(projections), len(projections)+len(toInclude))
 
 		for i := range newProjections {

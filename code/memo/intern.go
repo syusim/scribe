@@ -62,6 +62,7 @@ func hash(x interface{}) string {
 // TODO: codegen these
 func (m *Memo) internColRef(x scalar.ColRef) *scalar.ColRef {
 	h := hash(x)
+	fmt.Println(h)
 	if v, ok := m.hashes[h]; ok {
 		return v.(*scalar.ColRef)
 	}
@@ -104,6 +105,16 @@ func (m *Memo) internPlus(x scalar.Plus) *scalar.Plus {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
 		return v.(*scalar.Plus)
+	}
+	p := &x
+	m.hashes[h] = p
+	return p
+}
+
+func (m *Memo) internTimes(x scalar.Times) *scalar.Times {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*scalar.Times)
 	}
 	p := &x
 	m.hashes[h] = p

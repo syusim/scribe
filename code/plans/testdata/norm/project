@@ -10,41 +10,52 @@ ddl
 ----
 ok
 
-plan
-(project abc [a b c])
-----
--> Scan [1 2 3]
+#plan
+#(project abc [a b c])
+#----
+#-> Scan [1 2 3]
+#
+#plan
+#(project
+#  (project abc [b c])
+#  [c])
+#----
+#-> Project [] [3]
+# -> Scan [1 2 3]
+#
+#plan
+#(project
+#  (project abc [(+ b c) c])
+#  [(+ 1 c)])
+#----
+#-> Project [5] []
+# -> Scan [1 2 3]
+# -> Plus
+#  -> Constant (1)
+#  -> ColRef (3)
+#
+#plan
+#(project
+#  (as (project abc [(* b c) c])
+#  _ [d e])
+#  [d])
+#----
+#-> Project [4] []
+# -> Scan [1 2 3]
+# -> Times
+#  -> ColRef (2)
+#  -> ColRef (3)
 
 plan
-(project
-  (project abc [b c])
-  [c])
-----
--> Project [] [3]
- -> Scan [1 2 3]
-
-plan
-(project
-  (project abc [(+ b c) c])
-  [(+ 1 c)])
-----
--> Project [5] []
- -> Scan [1 2 3]
- -> Plus
-  -> Constant (1)
-  -> ColRef (3)
-
-plan
-(project
-  (as (project abc [(+ b c) c])
-  _ [d e])
-  [d])
+(as (project
+  abc
+  [(+ a a)]) _ [a])
 ----
 -> Project [4] []
  -> Scan [1 2 3]
- -> Plus
-  -> ColRef (2)
-  -> ColRef (3)
+ -> Times
+  -> Constant (2)
+  -> ColRef (1)
 
 plan
 (as (project
@@ -61,66 +72,14 @@ plan
 ----
 -> Project [8] []
  -> Scan [1 2 3]
- -> Plus
-  -> ColRef (1)
-  -> Plus
-   -> ColRef (1)
-   -> Plus
-    -> ColRef (1)
-    -> Plus
-     -> ColRef (1)
-     -> Plus
+ -> Times
+  -> Constant (2)
+  -> Times
+   -> Constant (2)
+   -> Times
+    -> Constant (2)
+    -> Times
+     -> Constant (2)
+     -> Times
+      -> Constant (2)
       -> ColRef (1)
-      -> Plus
-       -> ColRef (1)
-       -> Plus
-        -> ColRef (1)
-        -> Plus
-         -> ColRef (1)
-         -> Plus
-          -> ColRef (1)
-          -> Plus
-           -> ColRef (1)
-           -> Plus
-            -> ColRef (1)
-            -> Plus
-             -> ColRef (1)
-             -> Plus
-              -> ColRef (1)
-              -> Plus
-               -> ColRef (1)
-               -> Plus
-                -> ColRef (1)
-                -> Plus
-                 -> ColRef (1)
-                 -> Plus
-                  -> ColRef (1)
-                  -> Plus
-                   -> ColRef (1)
-                   -> Plus
-                    -> ColRef (1)
-                    -> Plus
-                     -> ColRef (1)
-                     -> Plus
-                      -> ColRef (1)
-                      -> Plus
-                       -> ColRef (1)
-                       -> Plus
-                        -> ColRef (1)
-                        -> Plus
-                         -> ColRef (1)
-                         -> Plus
-                          -> ColRef (1)
-                          -> Plus
-                           -> ColRef (1)
-                           -> Plus
-                            -> ColRef (1)
-                            -> Plus
-                             -> ColRef (1)
-                             -> Plus
-                              -> ColRef (1)
-                              -> Plus
-                               -> ColRef (1)
-                               -> Plus
-                                -> ColRef (1)
-                                -> ColRef (1)

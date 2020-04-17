@@ -18,6 +18,10 @@ func (m *Memo) Walk(in lang.Expr, f func(e lang.Expr) lang.Expr) lang.Expr {
 		left := m.Walk(e.Left, f).(scalar.Expr)
 		right := m.Walk(e.Right, f).(scalar.Expr)
 		return f(m.Plus(left, right))
+	case *scalar.Times:
+		left := m.Walk(e.Left, f).(scalar.Expr)
+		right := m.Walk(e.Right, f).(scalar.Expr)
+		return f(m.Times(left, right))
 	case *scalar.And:
 		left := m.Walk(e.Left, f).(scalar.Expr)
 		right := m.Walk(e.Right, f).(scalar.Expr)

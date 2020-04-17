@@ -15,10 +15,7 @@ func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Expr, error) {
 		if !ok {
 			return nil, fmt.Errorf("no column named %q", a)
 		}
-		return &scalar.ColRef{
-			Id:  id,
-			Typ: typ,
-		}, nil
+		return b.memo.ColRef(id, typ), nil
 	case *ast.ScalarFunc:
 		args := make([]scalar.Expr, len(a.Args))
 		// TODO: i'm very inconsistent in my use of the two
@@ -59,7 +56,17 @@ func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Expr, error) {
 				}
 			}
 			return b.memo.Plus(args[0], args[1]), nil
-		case lang.Minus, lang.Times:
+		case lang.Times:
+			if len(args) != 2 {
+				return nil, fmt.Errorf("* takes 2 args")
+			}
+			for _, arg := range args {
+				if arg.Type() != lang.Int {
+					return nil, fmt.Errorf("args to %s must be int", a.Op)
+				}
+			}
+			return b.memo.Times(args[0], args[1]), nil
+		case lang.Minus:
 			for _, arg := range args {
 				if arg.Type() != lang.Int {
 					return nil, fmt.Errorf("args to %s must be int", a.Op)
