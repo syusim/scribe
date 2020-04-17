@@ -1,0 +1,20 @@
+exec
+(create-table foo
+  [[x int] [y string] [z bool]]
+  [[1 "one" true]
+   [2 "two" false]
+   [3 "three" false]
+   [4 "four" true]]
+  [[x_idx   [x]]
+   [y_idx   [y]]
+   [z_y_idx [z y]]])
+----
+ok
+
+exec
+(run foo)
+----
+[1 "one" true]
+[2 "two" false]
+[3 "three" false]
+[4 "four" true]

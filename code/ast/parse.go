@@ -291,7 +291,7 @@ func parseDatum(s sexp.Sexp) (lang.Datum, error) {
 func parseRow(s sexp.Sexp) (lang.Row, error) {
 	r, ok := s.(sexp.List)
 	if !ok {
-		return nil, fmt.Errorf("expected error, got %s", s)
+		return nil, fmt.Errorf("expected list, got %s", s)
 	}
 	result := make(lang.Row, len(r))
 	for i, d := range r {
@@ -302,6 +302,23 @@ func parseRow(s sexp.Sexp) (lang.Row, error) {
 		result[i] = parsed
 	}
 	return result, nil
+}
+
+func parseIndexDef(s sexp.Sexp) (IndexDef, error) {
+	r, ok := s.(sexp.List)
+	if !ok || len(r) != 2 {
+		return IndexDef{}, fmt.Errorf("expected 2-element list, got %s", s)
+	}
+	name, ok := r[0].(sexp.Atom)
+	if !ok {
+		return IndexDef{}, fmt.Errorf("expected index name, got %s", name)
+	}
+	cols, err := parseAtomList(r[1])
+	if err != nil {
+		return IndexDef{}, err
+	}
+
+	return IndexDef{Name: string(name), Cols: cols}, nil
 }
 
 func parseStatement(s sexp.Sexp) (Statement, error) {
@@ -327,8 +344,8 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 		}
 		return &RunQuery{input}, nil
 	case "create-table":
-		if len(l) < 3 || len(l) > 4 {
-			return nil, fmt.Errorf("create-table takes 3 or 4 arguments")
+		if len(l) < 3 || len(l) > 5 {
+			return nil, fmt.Errorf("create-table takes 3, 4, or 5 arguments")
 		}
 
 		name, ok := l[1].(sexp.Atom)
@@ -367,10 +384,28 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 			}
 		}
 
+		var indexes []IndexDef
+		if len(l) > 4 {
+			indexList, ok := l[4].(sexp.List)
+			if !ok {
+				return nil, fmt.Errorf("expected list of indexes, got %s", l[4])
+			}
+
+			indexes = make([]IndexDef, len(indexList))
+			for i, entry := range indexList {
+				idx, err := parseIndexDef(entry)
+				if err != nil {
+					return nil, err
+				}
+				indexes[i] = idx
+			}
+		}
+
 		return &CreateTable{
 			Name:    string(name),
 			Columns: defs,
 			Data:    rows,
+			Indexes: indexes,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown statement %s", h)

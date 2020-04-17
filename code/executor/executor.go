@@ -10,7 +10,6 @@ import (
 	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/execbuilder"
 	"github.com/justinj/scribe/code/memo"
-	"github.com/justinj/scribe/code/opt"
 )
 
 type executor struct {
@@ -35,13 +34,10 @@ func (e *executor) Run(cmd string) (Result, error) {
 
 	switch c := stmt.(type) {
 	case *ast.CreateTable:
-		e.catalog.AddTable(
-			c.Name,
-			c.Columns,
-			c.Data,
-			// Just have one empty index.
-			[][]opt.ColOrdinal{{}},
-		)
+		err := e.catalog.AddTable(c)
+		if err != nil {
+			return Result{}, fmt.Errorf("error: %s", err)
+		}
 		return Result{Msg: "ok"}, nil
 	case *ast.RunQuery:
 		mem := memo.New()

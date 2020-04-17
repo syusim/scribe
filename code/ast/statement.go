@@ -20,10 +20,29 @@ func (r *RunQuery) Format(buf *bytes.Buffer) {
 	buf.WriteByte(')')
 }
 
+type IndexDef struct {
+	Name string
+	Cols []string
+}
+
+func (d *IndexDef) Format(buf *bytes.Buffer) {
+	buf.WriteByte('[')
+	buf.WriteString(d.Name)
+	buf.WriteString(" [")
+	for i, c := range d.Cols {
+		if i > 0 {
+			buf.WriteByte(' ')
+		}
+		buf.WriteString(c)
+	}
+	buf.WriteString("]]")
+}
+
 type CreateTable struct {
 	Name    string
 	Columns []lang.Column
 	Data    []lang.Row
+	Indexes []IndexDef
 }
 
 func (c *CreateTable) Format(buf *bytes.Buffer) {
@@ -44,5 +63,15 @@ func (c *CreateTable) Format(buf *bytes.Buffer) {
 		row.Format(buf)
 	}
 	buf.WriteByte(']')
+	if len(c.Indexes) > 0 {
+		buf.WriteString(" [")
+		for i, idx := range c.Indexes {
+			if i > 0 {
+				buf.WriteByte(' ')
+			}
+			idx.Format(buf)
+		}
+		buf.WriteByte(']')
+	}
 	buf.WriteByte(')')
 }

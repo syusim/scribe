@@ -66,6 +66,7 @@ func TestParseStatement(t *testing.T) {
 		"(run bar)",
 		"(create-table bar [[x int] [y int] [z int]] [[10 20 30] [40 50 60]])",
 		"(create-table bar [[x int] [y int] [z int]] [])",
+		"(create-table bar [[x int] [y int] [z int]] [] [[idx [a b]]])",
 	}
 
 	for _, tc := range testCases {

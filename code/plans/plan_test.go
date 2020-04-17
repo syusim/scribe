@@ -9,7 +9,6 @@ import (
 	"github.com/justinj/scribe/code/builder"
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/memo"
-	"github.com/justinj/scribe/code/opt"
 )
 
 func TestNorm(t *testing.T) {
@@ -24,13 +23,9 @@ func TestNorm(t *testing.T) {
 				}
 				switch c := stmt.(type) {
 				case *ast.CreateTable:
-					catalog.AddTable(
-						c.Name,
-						c.Columns,
-						c.Data,
-						// Just have one empty index.
-						[][]opt.ColOrdinal{{}},
-					)
+					if err := catalog.AddTable(c); err != nil {
+						return fmt.Sprintf("error: %s\n", err)
+					}
 					return "ok\n"
 				default:
 					panic("unhandled")

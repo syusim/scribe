@@ -3,6 +3,7 @@ package cat
 import (
 	"fmt"
 
+	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
@@ -69,25 +70,50 @@ func New() *Catalog {
 	return &Catalog{}
 }
 
-func (c *Catalog) AddTable(
-	name string,
-	cols []lang.Column,
-	data []lang.Row,
-	// TODO: have a way for these to have names.
-	indexes [][]opt.ColOrdinal,
-) {
+func (c *Catalog) AddTable(def *ast.CreateTable) error {
+	// TODO: validate this:
+	// * don't allow repeated index names.
 	tab := Table{
-		Name: name,
-		cols: cols,
+		Name: def.Name,
+		cols: def.Columns,
 	}
 
-	tab.indexes = make([]Index, len(indexes))
-	for i := range indexes {
-		// TODO: use the names of the relevant columns?
-		tab.indexes[i].name = fmt.Sprintf("%s_idx_%d", name, i+1)
-		tab.indexes[i].ordering = indexes[i]
-		tab.indexes[i].data = index.New(data, indexes[i])
+	idxs := def.Indexes
+
+	if len(idxs) == 0 {
+		idxs = []ast.IndexDef{
+			{Name: "default"},
+		}
+	}
+
+	tab.indexes = make([]Index, len(idxs))
+	for i, idx := range idxs {
+		tab.indexes[i].name = fmt.Sprintf(idx.Name)
+
+		ords := make([]opt.ColOrdinal, len(idx.Cols))
+		for j, idxCol := range idx.Cols {
+			nextOrd := -1
+
+			// TODO: use a better algorithm here (or don't. it's a free country)
+			for k, c := range def.Columns {
+				if c.Name == idxCol {
+					nextOrd = k
+					break
+				}
+			}
+
+			if nextOrd == -1 {
+				return fmt.Errorf("invalid index column %q", idxCol)
+			}
+
+			ords[j] = opt.ColOrdinal(nextOrd)
+		}
+
+		tab.indexes[i].ordering = ords
+		tab.indexes[i].data = index.New(def.Data, ords)
 	}
 
 	c.tables = append(c.tables, tab)
+
+	return nil
 }
