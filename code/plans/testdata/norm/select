@@ -1,0 +1,40 @@
+ddl
+(create-table abc
+  [[a int] [b int] [c int]])
+----
+ok
+
+ddl
+(create-table xyz
+  [[x int] [y int] [z int]])
+----
+ok
+
+plan
+(select
+  (project abc [a b])
+  (= a 1))
+----
+-> Select
+ -> Project [] [1 2]
+  -> Scan [1 2 3]
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> Constant (1)
+
+plan
+(select
+  (project (join abc xyz true) [a b])
+  (= a 1))
+----
+-> Select
+ -> Project [] [1 2]
+  -> Join
+   -> Scan [1 2 3]
+   -> Scan [4 5 6]
+   -> Filters
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> Constant (1)

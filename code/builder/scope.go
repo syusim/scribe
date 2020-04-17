@@ -44,3 +44,11 @@ func appendScopes(a, b *scope) *scope {
 		cols: append(append(make([]col, 0), a.cols...), b.cols...),
 	}
 }
+
+func (s *scope) OutCols() []opt.ColumnID {
+	cols := make([]opt.ColumnID, len(s.cols))
+	for i := range s.cols {
+		cols[i] = s.cols[i].id
+	}
+	return cols
+}

@@ -47,13 +47,17 @@ func (e *executor) Run(cmd string) (Result, error) {
 		mem := memo.New()
 
 		b := builder.New(e.catalog, mem)
-		rel, _, err := b.Build(c.Input)
+		rel, scope, err := b.Build(c.Input)
 		if err != nil {
 			return Result{}, err
 		}
 
+		// The relational representation of the plan doesn't have a notion of the
+		// ordering of columns, however, that information is encoded in the order
+		// of the columns stored in the final outScope.
+
 		eb := execbuilder.New(e.catalog, mem)
-		plan, _, err := eb.Build(rel)
+		plan, err := eb.Build(rel, scope.OutCols())
 		if err != nil {
 			return Result{}, err
 		}

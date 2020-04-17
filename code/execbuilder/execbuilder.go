@@ -37,7 +37,26 @@ func (b *builder) buildScalar(e scalar.Expr, m opt.ColMap) (exec.ScalarExpr, err
 	}).(scalar.Expr)), nil
 }
 
-func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
+func (b *builder) Build(e *memo.RelExpr, outCols []opt.ColumnID) (exec.Node, error) {
+	n, m, err := b.build(e)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]exec.ScalarExpr, len(outCols))
+	for i := range outCols {
+		idx, _ := m.Get(outCols[i])
+		out[i] = &scalar.ExecColRef{
+			Idx: idx,
+			// TODO: do we need a type?
+			Typ: 0,
+		}
+	}
+
+	return exec.Project(n, out), nil
+}
+
+func (b *builder) build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 	switch o := e.E.(type) {
 	case *memo.Scan:
 		tab, ok := b.cat.TableByName(o.TableName)
@@ -62,7 +81,7 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 
 		return exec.Scan(iter), m, nil
 	case *memo.Select:
-		in, m, err := b.Build(o.Input)
+		in, m, err := b.build(o.Input)
 		if err != nil {
 			return nil, opt.ColMap{}, err
 		}
@@ -82,12 +101,12 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 		return exec.Select(in, pred), m, nil
 
 	case *memo.Join:
-		left, leftMap, err := b.Build(o.Left)
+		left, leftMap, err := b.build(o.Left)
 		if err != nil {
 			return nil, opt.ColMap{}, err
 		}
 
-		right, rightMap, err := b.Build(o.Right)
+		right, rightMap, err := b.build(o.Right)
 		if err != nil {
 			return nil, opt.ColMap{}, err
 		}
@@ -117,22 +136,34 @@ func (b *builder) Build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			pred,
 		), m, nil
 	case *memo.Project:
-		in, m, err := b.Build(o.Input)
+		in, m, err := b.build(o.Input)
 		if err != nil {
 			return nil, opt.ColMap{}, err
 		}
 
 		outMap := opt.ColMap{}
 
-		exprs := make([]exec.ScalarExpr, len(o.Projections))
+		exprs := make([]exec.ScalarExpr, 0, len(o.Projections))
 		for i := range o.Projections {
 			p, err := b.buildScalar(o.Projections[i], m)
 			if err != nil {
 				return nil, opt.ColMap{}, err
 			}
-			exprs[i] = p
+			exprs = append(exprs, p)
 			outMap.Set(o.ColIDs[i], i)
 		}
+
+		o.PassthroughCols.ForEach(func(c opt.ColumnID) {
+			idx, _ := m.Get(c)
+			// Just synthesize a col ref.
+			exprs = append(exprs, &scalar.ExecColRef{
+				// TODO: do we need a type?
+				// TODO: standardize Typ vs Type
+				Typ: 0,
+				Idx: idx,
+			})
+			outMap.Set(c, len(exprs)-1)
+		})
 
 		return exec.Project(in, exprs), outMap, nil
 

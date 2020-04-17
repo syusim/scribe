@@ -47,7 +47,8 @@ func extractBoundUnbound(
 ) ([]scalar.Expr, []scalar.Expr) {
 	canPush := false
 	for _, f := range filters {
-		if m.GetScalarProps(f).FreeVars.SubsetOf(cols) {
+		freeVars := m.GetScalarProps(f).FreeVars
+		if freeVars.SubsetOf(cols) {
 			canPush = true
 			break
 		}
@@ -60,7 +61,8 @@ func extractBoundUnbound(
 	var bound []scalar.Expr
 	var unbound []scalar.Expr
 	for _, f := range filters {
-		if m.GetScalarProps(f).FreeVars.SubsetOf(cols) {
+		freeVars := m.GetScalarProps(f).FreeVars
+		if freeVars.SubsetOf(cols) {
 			bound = append(bound, f)
 		} else {
 			unbound = append(unbound, f)

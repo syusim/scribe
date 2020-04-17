@@ -1,0 +1,35 @@
+ddl
+(create-table abc
+  [[a int] [b int] [c int]])
+----
+ok
+
+ddl
+(create-table xyz
+  [[x int] [y int] [z int]])
+----
+ok
+
+plan
+(select abc true)
+----
+-> Scan [1 2 3]
+
+# How does this get simplified?
+plan
+(join abc xyz true)
+----
+-> Join
+ -> Scan [1 2 3]
+ -> Scan [4 5 6]
+ -> Filters
+
+plan
+(select abc (and (= a 1) true))
+----
+-> Select
+ -> Scan [1 2 3]
+ -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> Constant (1)

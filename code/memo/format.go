@@ -9,9 +9,6 @@ import (
 	"github.com/justinj/scribe/code/scalar"
 )
 
-type formatter struct {
-}
-
 // TODO: make a real tree printer?
 func Format(e lang.Expr) string {
 	var buf bytes.Buffer
@@ -51,6 +48,16 @@ func extra(buf *bytes.Buffer, e lang.Expr) {
 			fmt.Fprintf(buf, "%d", c)
 		}
 		buf.WriteByte(']')
+	case *Project:
+		buf.WriteString(" [")
+		for i, c := range o.ColIDs {
+			if i > 0 {
+				buf.WriteByte(' ')
+			}
+			fmt.Fprintf(buf, "%d", c)
+		}
+		buf.WriteString("] ")
+		buf.WriteString(o.PassthroughCols.String())
 	case *scalar.Func:
 		fmt.Fprintf(buf, " (%s)", o.Op)
 	case *scalar.Constant:

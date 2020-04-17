@@ -31,7 +31,7 @@ plan
    (+ x (+ y z))
    (+ x (+ y 0))])
 ----
--> Project
+-> Project [4 5 6] []
  -> Scan [1 2 3]
  -> Plus
   -> ColRef (1)
@@ -116,3 +116,23 @@ plan
   -> Func (=)
    -> ColRef (1)
    -> ColRef (4)
+
+plan
+(select
+ (join abc xyz true)
+ (and (= y 3) (= c 3)))
+----
+-> Join
+ -> Select
+  -> Scan [1 2 3]
+  -> Filters
+   -> Func (=)
+    -> ColRef (3)
+    -> Constant (3)
+ -> Select
+  -> Scan [4 5 6]
+  -> Filters
+   -> Func (=)
+    -> ColRef (5)
+    -> Constant (3)
+ -> Filters

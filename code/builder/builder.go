@@ -99,22 +99,30 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 			return nil, nil, err
 		}
 
-		exprs := make([]scalar.Expr, len(a.Exprs))
-		outCols := make([]opt.ColumnID, len(exprs))
+		exprs := make([]scalar.Expr, 0, len(a.Exprs))
+		outCols := make([]opt.ColumnID, 0, len(exprs))
 
 		outScope := newScope()
+		var passthrough opt.ColSet
 
 		for i, e := range a.Exprs {
 			proj, err := b.BuildScalar(e, inScope)
 			if err != nil {
 				return nil, nil, err
 			}
-			exprs[i] = proj
-			outCols[i] = b.addCol(a.Aliases[i], proj.Type())
-			outScope.addCol(a.Aliases[i], outCols[i], proj.Type())
+			// Sneak a peek!
+			if v, ok := proj.(*scalar.ColRef); ok {
+				passthrough.Add(v.Id)
+				outScope.addCol(a.Aliases[i], v.Id, proj.Type())
+			} else {
+				exprs = append(exprs, proj)
+				newCol := b.addCol(a.Aliases[i], proj.Type())
+				outCols = append(outCols, newCol)
+				outScope.addCol(a.Aliases[i], newCol, proj.Type())
+			}
 		}
 
-		return b.memo.Project(in, outCols, exprs), outScope, nil
+		return b.memo.Project(in, outCols, exprs, passthrough), outScope, nil
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e))
 	}

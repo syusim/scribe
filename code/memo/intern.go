@@ -18,6 +18,10 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 		fmt.Fprintf(buf, "%p", e)
 	case opt.ColumnID:
 		fmt.Fprintf(buf, "%d", e)
+	case opt.ColSet:
+		// TODO: need to make a real thing here, but this is safe
+		// because Go guarantees order in stringified form.
+		fmt.Fprintf(buf, "%s", e.String())
 	case []opt.ColumnID:
 		for i, c := range e {
 			if i > 0 {

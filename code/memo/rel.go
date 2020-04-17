@@ -47,8 +47,9 @@ func (j *Join) Child(i int) lang.Expr {
 type Project struct {
 	Input *RelExpr
 
-	ColIDs      []opt.ColumnID
-	Projections []scalar.Expr
+	ColIDs          []opt.ColumnID
+	Projections     []scalar.Expr
+	PassthroughCols opt.ColSet
 }
 
 func (p *Project) ChildCount() int {

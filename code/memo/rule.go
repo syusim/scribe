@@ -115,3 +115,34 @@ func UnfoldSelectCondition(m *Memo, args []interface{}) lang.Expr {
 
 	return nil
 }
+
+func SimplifySelectFilters(m *Memo, args []interface{}) lang.Expr {
+	input, filter := args[0].(*RelExpr), args[1].(*scalar.Filters)
+
+	var newFilters []scalar.Expr
+	for i, f := range filter.Filters {
+		if eqConst(f, lang.DBool(true)) {
+			newFilters = make([]scalar.Expr, i)
+			copy(newFilters, filter.Filters)
+		} else if newFilters != nil {
+			newFilters = append(newFilters, f)
+		}
+	}
+	if newFilters != nil {
+		return m.Select(
+			input,
+			m.Filters(newFilters),
+		)
+	}
+
+	return nil
+}
+
+func EliminateSelect(m *Memo, args []interface{}) lang.Expr {
+	input, filter := args[0].(*RelExpr), args[1].(*scalar.Filters)
+	if len(filter.Filters) == 0 {
+		return input
+	}
+
+	return nil
+}

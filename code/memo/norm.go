@@ -44,11 +44,13 @@ func (m *Memo) Project(
 	input *RelExpr,
 	colIDs []opt.ColumnID,
 	projections []scalar.Expr,
+	passthrough opt.ColSet,
 ) *RelExpr {
 	return m.internProject(Project{
-		Input:       input,
-		ColIDs:      colIDs,
-		Projections: projections,
+		Input:           input,
+		ColIDs:          colIDs,
+		Projections:     projections,
+		PassthroughCols: passthrough,
 	})
 }
 
@@ -56,10 +58,14 @@ func (m *Memo) Select(input *RelExpr, filter scalar.Expr) *RelExpr {
 	if e := m.matchRules([]interface{}{input, filter}, []rule{
 		WrapSelectConditionInFilters,
 		UnfoldSelectCondition,
+		// TODO: Can this be its own rule?
+		SimplifySelectFilters,
+		EliminateSelect,
 	}); e != nil {
 		return e.(*RelExpr)
 	}
 
+	// TODO: make this a real rule
 	// MergeSelectJoin
 	if j, ok := input.E.(*Join); ok {
 		return m.Join(
@@ -96,17 +102,6 @@ func (m *Memo) Plus(left, right scalar.Expr) scalar.Expr {
 }
 
 func (m *Memo) And(left, right scalar.Expr) scalar.Expr {
-	// AssociateAnd
-	if l, ok := left.(*scalar.And); ok {
-		return m.And(
-			l.Left,
-			m.And(
-				l.Right,
-				right,
-			),
-		)
-	}
-
 	return m.internAnd(scalar.And{left, right})
 }
 

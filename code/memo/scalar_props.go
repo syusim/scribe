@@ -6,7 +6,7 @@ import (
 )
 
 type ScalarProps struct {
-	FreeVars *opt.ColSet
+	FreeVars opt.ColSet
 }
 
 func (m *Memo) GetScalarProps(e scalar.Expr) ScalarProps {
@@ -15,7 +15,7 @@ func (m *Memo) GetScalarProps(e scalar.Expr) ScalarProps {
 	}
 
 	props := ScalarProps{
-		FreeVars: &opt.ColSet{},
+		FreeVars: opt.ColSet{},
 	}
 
 	switch e := e.(type) {
