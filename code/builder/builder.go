@@ -123,6 +123,19 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 		}
 
 		return b.memo.Project(in, outCols, exprs, passthrough), outScope, nil
+	case *ast.As:
+		expr, inScope, err := b.Build(a.Input)
+		if err != nil {
+			return nil, nil, err
+		}
+		outScope := newScope()
+		if len(a.ColNames) > len(inScope.cols) {
+			return nil, nil, fmt.Errorf("too many cols!")
+		}
+		for i := range a.ColNames {
+			outScope.addCol(a.ColNames[i], inScope.cols[i].id, inScope.cols[i].typ)
+		}
+		return expr, outScope, nil
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e))
 	}

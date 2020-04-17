@@ -2,6 +2,7 @@ package memo
 
 import (
 	"github.com/justinj/scribe/code/lang"
+	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -142,6 +143,65 @@ func EliminateSelect(m *Memo, args []interface{}) lang.Expr {
 	input, filter := args[0].(*RelExpr), args[1].(*scalar.Filters)
 	if len(filter.Filters) == 0 {
 		return input
+	}
+
+	return nil
+}
+
+// Project Rules.
+
+func EliminateProject(m *Memo, args []interface{}) lang.Expr {
+	input, _, projections, passthrough := args[0].(*RelExpr), args[1].([]opt.ColumnID), args[2].([]scalar.Expr), args[3].(opt.ColSet)
+
+	if len(projections) > 0 {
+		return nil
+	}
+
+	if input.Props.OutputCols.Equals(passthrough) {
+		return input
+	}
+
+	return nil
+}
+
+func MergeProjectProject(m *Memo, args []interface{}) lang.Expr {
+	input, colIDs, projections, passthrough := args[0].(*RelExpr), args[1].([]opt.ColumnID), args[2].([]scalar.Expr), args[3].(opt.ColSet)
+
+	if p, ok := input.E.(*Project); ok {
+		// passthrough is the same as before, except we need to get
+		// rid of the things that we're now computing outselves.
+		newPassthrough := passthrough.Copy()
+		var toInclude []int
+		for i, c := range p.ColIDs {
+			newPassthrough.Remove(c)
+			if passthrough.Has(c) {
+				toInclude = append(toInclude, i)
+			}
+		}
+
+		// projections are also the same as before, but with:
+		// * columns we were passing through before being computed now
+		//   and
+		// * input columns being inlined into our projections (not done yet).
+		newProjections := make([]scalar.Expr, len(projections), len(projections)+len(toInclude))
+
+		for i := range newProjections {
+			newProjections[i] = inlineIn(m, projections[i], p.Projections, p.ColIDs)
+		}
+
+		newColIDs := make([]opt.ColumnID, len(colIDs), len(colIDs)+len(toInclude))
+		copy(newColIDs, colIDs)
+		for _, idx := range toInclude {
+			newProjections = append(newProjections, p.Projections[idx])
+			newColIDs = append(newColIDs, p.ColIDs[idx])
+		}
+
+		return m.Project(
+			p.Input,
+			newColIDs,
+			newProjections,
+			newPassthrough,
+		)
 	}
 
 	return nil

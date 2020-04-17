@@ -29,6 +29,15 @@ func (c *ColSet) Add(col ColumnID) {
 	c.elems[col] = struct{}{}
 }
 
+func (c *ColSet) Len() int {
+	return len(c.elems)
+}
+
+func (c *ColSet) Remove(col ColumnID) {
+	c.ensure()
+	delete(c.elems, col)
+}
+
 func (c *ColSet) Has(col ColumnID) bool {
 	c.ensure()
 	_, ok := c.elems[col]
@@ -37,12 +46,17 @@ func (c *ColSet) Has(col ColumnID) bool {
 
 func (c *ColSet) ForEach(f func(c ColumnID)) {
 	c.ensure()
-	for k := range c.elems {
-		f(k)
+	result := make([]ColumnID, 0)
+	for c := range c.elems {
+		result = append(result, c)
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i] < result[j] })
+	for _, c := range result {
+		f(c)
 	}
 }
 
-func (c *ColSet) SubsetOf(o ColSet) bool {
+func (c ColSet) SubsetOf(o ColSet) bool {
 	c.ensure()
 	o.ensure()
 	for e := range c.elems {
@@ -51,6 +65,21 @@ func (c *ColSet) SubsetOf(o ColSet) bool {
 		}
 	}
 	return true
+}
+
+func (c ColSet) Copy() ColSet {
+	c.ensure()
+	var res ColSet
+	for e := range c.elems {
+		res.Add(e)
+	}
+	return res
+}
+
+func (c ColSet) Equals(o ColSet) bool {
+	c.ensure()
+	o.ensure()
+	return o.SubsetOf(c) && c.SubsetOf(o)
 }
 
 func (c *ColSet) UnionWith(o ColSet) {
@@ -68,6 +97,7 @@ func (c *ColSet) UnionWith(o ColSet) {
 }
 
 func (c *ColSet) String() string {
+	c.ensure()
 	// TODO: make this not suck!
 	result := make([]ColumnID, 0)
 	for c := range c.elems {

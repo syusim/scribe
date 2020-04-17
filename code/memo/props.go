@@ -22,6 +22,7 @@ func buildProps(r *RelExpr) {
 		for _, c := range e.ColIDs {
 			r.Props.OutputCols.Add(c)
 		}
+		r.Props.OutputCols.UnionWith(e.PassthroughCols)
 	case *Join:
 		e.Left.Props.OutputCols.ForEach(func(c opt.ColumnID) {
 			r.Props.OutputCols.Add(c)

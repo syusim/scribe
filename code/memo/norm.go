@@ -46,6 +46,13 @@ func (m *Memo) Project(
 	projections []scalar.Expr,
 	passthrough opt.ColSet,
 ) *RelExpr {
+	if e := m.matchRules([]interface{}{input, colIDs, projections, passthrough}, []rule{
+		EliminateProject,
+		MergeProjectProject,
+	}); e != nil {
+		return e.(*RelExpr)
+	}
+
 	return m.internProject(Project{
 		Input:           input,
 		ColIDs:          colIDs,

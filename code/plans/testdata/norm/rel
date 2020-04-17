@@ -119,7 +119,7 @@ plan
 
 plan
 (select
- (join abc xyz true)
+ (join abc xyz (= a x))
  (and (= y 3) (= c 3)))
 ----
 -> Join
@@ -136,3 +136,6 @@ plan
     -> ColRef (5)
     -> Constant (3)
  -> Filters
+  -> Func (=)
+   -> ColRef (1)
+   -> ColRef (4)

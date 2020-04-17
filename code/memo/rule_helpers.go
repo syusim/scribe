@@ -1,6 +1,7 @@
 package memo
 
 import (
+	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
@@ -69,4 +70,22 @@ func extractBoundUnbound(
 		}
 	}
 	return bound, unbound
+}
+
+func inlineIn(
+	m *Memo,
+	e scalar.Expr,
+	projs []scalar.Expr,
+	ids []opt.ColumnID,
+) scalar.Expr {
+	return exec.ScalarExpr(m.Walk(e, func(in lang.Expr) lang.Expr {
+		if ref, ok := in.(*scalar.ColRef); ok {
+			for i, col := range ids {
+				if col == ref.Id {
+					return projs[i]
+				}
+			}
+		}
+		return in
+	}).(scalar.Expr))
 }
