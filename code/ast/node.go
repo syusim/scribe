@@ -88,3 +88,21 @@ func (a *As) Format(buf *bytes.Buffer) {
 	}
 	buf.WriteString(")")
 }
+
+type OrderBy struct {
+	Input    RelExpr
+	ColNames []string
+}
+
+func (o *OrderBy) Format(buf *bytes.Buffer) {
+	buf.WriteString("(order-by ")
+	o.Input.Format(buf)
+	buf.WriteString(" [")
+	for i, n := range o.ColNames {
+		if i > 0 {
+			buf.WriteByte(' ')
+		}
+		buf.WriteString(n)
+	}
+	buf.WriteString("])")
+}

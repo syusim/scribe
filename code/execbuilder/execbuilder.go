@@ -63,14 +63,13 @@ func (b *builder) build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 			// This should have been verified already.
 			panic(fmt.Sprintf("table %q not found", o.TableName))
 		}
-		if tab.IndexCount() == 0 {
+		if tab.IndexCount() <= o.Index {
 			// TODO: this should be ensured to be impossible.
 			// TODO: have a better error here.
-			panic("no indexes buddy!")
+			panic("invalid index")
 		}
 
-		// TODO: pass in which one to use
-		idx := tab.Index(0)
+		idx := tab.Index(o.Index)
 		iter := idx.Scan()
 
 		var m opt.ColMap
@@ -163,6 +162,8 @@ func (b *builder) build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
 		})
 
 		return exec.Project(in, exprs), outMap, nil
+	case *memo.Root:
+		return b.build(o.Input)
 
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e.E))

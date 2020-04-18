@@ -10,7 +10,10 @@ type relExpr interface {
 // Also not sure how to structure this right so that other packages and inspect it sanely.
 // TODO/idea: what if every expr had its children directly, but also was a thing in a map to a metadata thing?
 type RelExpr struct {
+	// The logical expression.
 	E relExpr
+
+	// Physical implementations
 
 	Props Props
 }

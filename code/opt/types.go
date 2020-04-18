@@ -14,6 +14,19 @@ type ColOrdinal int //)
 
 type ColumnID int
 
+type Ordering []ColumnID
+
+// TODO: merge the lang and opt packages
+func RowCompare(a, b lang.Row, ord []ColOrdinal) lang.CmpResult {
+	for _, idx := range ord {
+		cmp := lang.Compare(a[idx], b[idx])
+		if cmp != lang.EQ {
+			return cmp
+		}
+	}
+	return lang.EQ
+}
+
 ////(relation.string
 //func (t Relation) String() string {
 //	widest := make([]int, len(t.ColNames))

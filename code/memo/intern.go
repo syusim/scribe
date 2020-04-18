@@ -10,8 +10,12 @@ import (
 	"github.com/justinj/scribe/code/scalar"
 )
 
+// TODO: this is subtle broken: the separator needs to be escaped
+// in all these instances.
 func hashField(buf *bytes.Buffer, f interface{}) {
 	switch e := f.(type) {
+	case int:
+		fmt.Fprintf(buf, "%d", e)
 	case string:
 		buf.WriteString(e)
 	case *RelExpr:
@@ -22,6 +26,13 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 		// TODO: need to make a real thing here, but this is safe
 		// because Go guarantees order in stringified form.
 		fmt.Fprintf(buf, "%s", e.String())
+	case opt.Ordering:
+		for i, c := range e {
+			if i > 0 {
+				buf.WriteByte(',')
+			}
+			fmt.Fprintf(buf, "%d", c)
+		}
 	case []opt.ColumnID:
 		for i, c := range e {
 			if i > 0 {
@@ -62,7 +73,6 @@ func hash(x interface{}) string {
 // TODO: codegen these
 func (m *Memo) internColRef(x scalar.ColRef) *scalar.ColRef {
 	h := hash(x)
-	fmt.Println(h)
 	if v, ok := m.hashes[h]; ok {
 		return v.(*scalar.ColRef)
 	}
@@ -165,6 +175,17 @@ func (m *Memo) internProject(x Project) *RelExpr {
 }
 
 func (m *Memo) internJoin(x Join) *RelExpr {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*RelExpr)
+	}
+	p := &RelExpr{E: &x}
+	buildProps(p)
+	m.hashes[h] = p
+	return p
+}
+
+func (m *Memo) internRoot(x Root) *RelExpr {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
 		return v.(*RelExpr)

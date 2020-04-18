@@ -58,6 +58,17 @@ func extra(buf *bytes.Buffer, e lang.Expr) {
 		}
 		buf.WriteString("] ")
 		buf.WriteString(o.PassthroughCols.String())
+	case *Root:
+		if len(o.Ordering) > 0 {
+			buf.WriteString(" (required ordering: [")
+			for i, c := range o.Ordering {
+				if i > 0 {
+					buf.WriteByte(' ')
+				}
+				fmt.Fprintf(buf, "%d", c)
+			}
+			buf.WriteString("]) ")
+		}
 	case *scalar.Func:
 		fmt.Fprintf(buf, " (%s)", o.Op)
 	case *scalar.Constant:

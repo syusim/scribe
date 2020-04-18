@@ -44,12 +44,12 @@ func TestNorm(t *testing.T) {
 			case "plan":
 				expr, err := ast.ParseRelExpr(td.Input)
 				if err != nil {
-					return fmt.Sprintf("error: %s", err)
+					return fmt.Sprintf("error: %s\n", err)
 				}
 				b := builder.New(catalog, memo.New())
 				e, _, err := b.Build(expr)
 				if err != nil {
-					return fmt.Sprintf("error: %s", err)
+					return fmt.Sprintf("error: %s\n", err)
 				}
 				return memo.Format(e)
 			default:

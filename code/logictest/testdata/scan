@@ -18,3 +18,11 @@ exec
 [2 "two" false]
 [3 "three" false]
 [4 "four" true]
+
+exec
+(run (order-by foo [y]))
+----
+[1 "one" true]
+[2 "two" false]
+[3 "three" false]
+[4 "four" true]

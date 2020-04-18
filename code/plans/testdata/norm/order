@@ -1,0 +1,28 @@
+ddl
+(create-table abc
+  [[a int] [b int] [c int]])
+----
+ok
+
+ddl
+(create-table xyz
+  [[x int] [y int] [z int]])
+----
+ok
+
+plan
+(order-by abc [b])
+----
+-> Root (required ordering: [2]) 
+ -> Scan [1 2 3]
+
+plan
+(order-by abc [d])
+----
+error: no col named "d"
+
+plan
+(order-by abc [b c])
+----
+-> Root (required ordering: [2 3]) 
+ -> Scan [1 2 3]

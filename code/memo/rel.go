@@ -11,6 +11,9 @@ import (
 type Scan struct {
 	TableName string
 	Cols      []opt.ColumnID
+
+	// Index is the ordinal of the index in the given table.
+	Index int
 }
 
 func (s *Scan) ChildCount() int {
@@ -81,6 +84,25 @@ func (s *Select) Child(i int) lang.Expr {
 		return s.Input
 	case 1:
 		return s.Filter
+	default:
+		panic("out of bounds")
+	}
+}
+
+type Root struct {
+	Input *RelExpr
+
+	Ordering opt.Ordering
+}
+
+func (r *Root) ChildCount() int {
+	return 1
+}
+
+func (r *Root) Child(i int) lang.Expr {
+	switch i {
+	case 0:
+		return r.Input
 	default:
 		panic("out of bounds")
 	}

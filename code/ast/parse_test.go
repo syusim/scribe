@@ -45,6 +45,7 @@ func TestParseRelExpr(t *testing.T) {
 		"(select table-name (and (= a 2) (= b 3)))",
 		"(as foo bar)",
 		"(as foo bar [u v w])",
+		"(order-by foo [x y])",
 	}
 
 	for _, tc := range testCases {

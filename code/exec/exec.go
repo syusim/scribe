@@ -2,8 +2,11 @@ package exec
 
 //(imports
 import (
+	"sort"
+
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
+	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 ) //)
 
@@ -170,32 +173,37 @@ func Cross(l, r Node) Node {
 	}
 }
 
-// func cols(n Node) []string {
-// 	switch e := n.(type) {
-// 	case *scan:
-// 		// TODO: fix this!
-// 		return e.rel.ColNames
-// 	case *select1:
-// 		return cols(e.input)
-// 	case *select2:
-// 		return cols(e.input)
-// 	case *project:
-// 		c := cols(e.input)
-// 		out := make([]string, len(e.idxs))
-// 		for i := range e.idxs {
-// 			out[i] = c[e.idxs[i]]
-// 		}
-// 		return out
-// 	case *cross:
-// 		lc := cols(e.l)
-// 		rc := cols(e.r)
-// 		c := make([]string, len(lc)+len(rc))
-// 		copy(c[:len(lc)], lc)
-// 		copy(c[len(lc):], rc)
-// 		return c
-// 	}
-// 	panic("unhandled")
-// }
+//(sort
+// TODO: naming this sort conflicts with the sortRows package. think of a better name (maybe suffix Node to all names)
+type sortRows struct {
+	input    Node
+	ordering []opt.ColOrdinal
+
+	rows []lang.Row
+	idx  int
+}
+
+func (s *sortRows) Start() {
+	s.rows = Spool(s.input)
+	sort.Slice(s.rows, func(i, j int) bool {
+		return opt.RowCompare(s.rows[i], s.rows[j], s.ordering) == lang.LT
+	})
+}
+
+func (s *sortRows) Next() (lang.Row, bool) {
+	if s.idx >= len(s.rows) {
+		return nil, false
+	}
+	s.idx++
+	return s.rows[s.idx-1], true
+}
+
+func Sort(in Node, ordering []opt.ColOrdinal) Node {
+	return &sortRows{
+		input:    in,
+		ordering: ordering,
+	}
+} //)
 
 // TODO: does this need error handling?
 func Spool(n Node) []lang.Row {
@@ -206,114 +214,3 @@ func Spool(n Node) []lang.Row {
 	}
 	return result
 }
-
-// func ChildCount(n Node) int {
-// 	switch n.(type) {
-// 	case *scan:
-// 		return 0
-// 	case *select1, *select2, *project:
-// 		return 1
-// 	case *cross:
-// 		return 2
-// 	default:
-// 		panic(fmt.Sprintf("unhandled node %T", n))
-// 	}
-// }
-
-// func Child(n Node, i int) Node {
-// 	switch e := n.(type) {
-// 	case *select1:
-// 		return e.input
-// 	case *select2:
-// 		return e.input
-// 	case *project:
-// 		return e.input
-// 	case *cross:
-// 		switch i {
-// 		case 0:
-// 			return e.l
-// 		case 1:
-// 			return e.r
-// 		}
-// 	}
-// 	panic("unhandled")
-// }
-
-// func Explain(n Node) string {
-// 	var buf bytes.Buffer
-// 	indent := func(depth int) {
-// 		for i := 0; i < depth; i++ {
-// 			buf.WriteString("  ")
-// 		}
-// 	}
-// 	var p func(n Node, depth int)
-// 	p = func(n Node, depth int) {
-// 		switch e := n.(type) {
-// 		case *scan:
-// 			buf.WriteString("scan")
-// 		case *select1:
-// 			fmt.Fprintf(&buf, "select [%d] = %q", e.i, e.d)
-// 		case *select2:
-// 			fmt.Fprintf(&buf, "select [%d] = [%d]", e.i, e.j)
-// 		case *project:
-// 			fmt.Fprintf(&buf, "project %v", e.idxs)
-// 		case *cross:
-// 			fmt.Fprintf(&buf, "cross")
-// 		}
-
-// 		fmt.Fprintf(&buf, " (%s)\n", strings.Join(cols(n), ","))
-// 		for i, m := 0, ChildCount(n); i < m; i++ {
-// 			indent(depth + 1)
-// 			buf.WriteString("-> ")
-// 			p(Child(n, i), depth+1)
-// 		}
-// 	}
-
-// 	p(n, 0)
-
-// 	return buf.String()
-// }
-
-// func main() {
-// 	r := opt.Relation{
-// 		ColNames: []string{"name", "from", "resides"},
-// 		Rows: []lang.Row{
-// 			{"Jordan", "New York", "New York"},
-// 			{"Lauren", "California", "New York"},
-// 			{"Justin", "Ontario", "New York"},
-// 			{"Devin", "California", "California"},
-// 			{"Smudge", "Ontario", "Ontario"},
-// 		},
-// 	}
-
-// 	c := opt.Relation{
-// 		ColNames: []string{"location", "country"},
-// 		Rows: []lang.Row{
-// 			{"New York", "United States"},
-// 			{"California", "United States"},
-// 			{"Ontario", "Canada"},
-// 		},
-// 	}
-
-// 	fmt.Println(
-// 		Explain(
-// 			Project(
-// 				Select2(
-// 					Select1(
-// 						Cross(
-// 							Scan(r),
-// 							Scan(c),
-// 						),
-// 						0,
-// 						"Justin",
-// 					),
-// 					2,
-// 					3,
-// 				),
-// 				[]int{0, 4},
-// 			),
-// 		),
-// 	)
-// }
-
-//)

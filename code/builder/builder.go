@@ -44,8 +44,30 @@ func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	}
 }
 
-// TODO: extract each arm
 func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
+	// This is legal at the root, and nowhere else.
+	if o, ok := e.(*ast.OrderBy); ok {
+		m, s, err := b.build(o.Input)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		var ord opt.Ordering
+		for _, col := range o.ColNames {
+			c, _, ok := s.resolve(col)
+			if !ok {
+				return nil, nil, fmt.Errorf("no col named %q", col)
+			}
+			ord = append(ord, c)
+		}
+
+		return b.memo.Root(m, ord), s, nil
+	}
+	return b.build(e)
+}
+
+// TODO: extract each arm
+func (b *builder) build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 	switch a := e.(type) {
 	case *ast.TableRef:
 		tab, ok := b.cat.TableByName(a.Name)
@@ -65,7 +87,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 		// TODO: look it up in the catalog to ensure it exists.
 		return b.memo.Scan(a.Name, cols), s, nil
 	case *ast.Select:
-		input, s, err := b.Build(a.Input)
+		input, s, err := b.build(a.Input)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -75,12 +97,12 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 		}
 		return b.memo.Select(input, filter), s, nil
 	case *ast.Join:
-		left, leftScope, err := b.Build(a.Left)
+		left, leftScope, err := b.build(a.Left)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		right, rightScope, err := b.Build(a.Right)
+		right, rightScope, err := b.build(a.Right)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -94,7 +116,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 
 		return b.memo.Join(left, right, on), s, nil
 	case *ast.Project:
-		in, inScope, err := b.Build(a.Input)
+		in, inScope, err := b.build(a.Input)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -124,7 +146,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 
 		return b.memo.Project(in, outCols, exprs, passthrough), outScope, nil
 	case *ast.As:
-		expr, inScope, err := b.Build(a.Input)
+		expr, inScope, err := b.build(a.Input)
 		if err != nil {
 			return nil, nil, err
 		}

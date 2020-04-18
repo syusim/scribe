@@ -109,6 +109,8 @@ func parseRelExpr(s sexp.Sexp) (RelExpr, error) {
 			return parseProject(e)
 		case "as":
 			return parseAs(e)
+		case "order-by":
+			return parseOrderBy(e)
 		default:
 			return nil, fmt.Errorf("unrecognized relational operator %s", e[0])
 		}
@@ -223,6 +225,22 @@ func parseAs(l sexp.List) (RelExpr, error) {
 		}
 	}
 	return &As{in, string(name), names}, nil
+}
+
+func parseOrderBy(l sexp.List) (RelExpr, error) {
+	if len(l) != 3 {
+		return nil, fmt.Errorf("order-by takes 2 args")
+	}
+	in, err := parseRelExpr(l[1])
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	names, err = parseAtomList(l[2])
+	if err != nil {
+		return nil, err
+	}
+	return &OrderBy{in, names}, nil
 }
 
 func ParseStatement(s string) (Statement, error) {

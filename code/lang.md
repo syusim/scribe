@@ -82,3 +82,10 @@ scope((as foo bar [u _ w]))
   [[1 2 3]
    [4 5 6]])
 ```
+
+There's a special operator that is only valid at the root, called `order-by`.
+`order-by` allows you to request a particular order on the data you will receive.
+```
+(order-by (select foo (= x 3))
+  [y])
+```

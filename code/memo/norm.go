@@ -88,6 +88,13 @@ func (m *Memo) Select(input *RelExpr, filter scalar.Expr) *RelExpr {
 	})
 }
 
+func (m *Memo) Root(input *RelExpr, ordering opt.Ordering) *RelExpr {
+	return m.internRoot(Root{
+		Input:    input,
+		Ordering: ordering,
+	})
+}
+
 func (m *Memo) Constant(d lang.Datum) scalar.Expr {
 	return m.internConstant(scalar.Constant{d})
 }
