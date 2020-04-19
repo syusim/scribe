@@ -37,6 +37,7 @@ func (b *builder) addCol(name string, typ lang.Type) opt.ColumnID {
 	return id
 }
 
+// TODO: just refer to the memo's handle onto catalog?
 func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	return &builder{
 		cat:  cat,
@@ -85,7 +86,7 @@ func (b *builder) build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 		}
 
 		// TODO: look it up in the catalog to ensure it exists.
-		return b.memo.Scan(a.Name, cols), s, nil
+		return b.memo.Scan(a.Name, cols, 0), s, nil
 	case *ast.Select:
 		input, s, err := b.build(a.Input)
 		if err != nil {

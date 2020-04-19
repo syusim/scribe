@@ -8,6 +8,7 @@ import (
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/builder"
 	"github.com/justinj/scribe/code/cat"
+	"github.com/justinj/scribe/code/explore"
 	"github.com/justinj/scribe/code/memo"
 )
 
@@ -52,6 +53,21 @@ func TestNorm(t *testing.T) {
 					return fmt.Sprintf("error: %s\n", err)
 				}
 				return memo.Format(e)
+			case "plan-memo":
+				expr, err := ast.ParseRelExpr(td.Input)
+				if err != nil {
+					return fmt.Sprintf("error: %s\n", err)
+				}
+				m := memo.New()
+				b := builder.New(catalog, m)
+				e, _, err := b.Build(expr)
+				if err != nil {
+					return fmt.Sprintf("error: %s\n", err)
+				}
+
+				explore.Explore(m, catalog, e)
+
+				return memo.FormatMemo(e)
 			default:
 				panic("unhandled")
 			}

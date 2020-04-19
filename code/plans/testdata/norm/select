@@ -1,27 +1,25 @@
 ddl
 (create-table abc
-  [[a int] [b int] [c int]])
+  [[a int] [b int] [c int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[a_idx   [a]]
+   [b_idx   [b]]
+   [c_b_idx [c b]]])
 ----
 ok
 
 ddl
 (create-table xyz
-  [[x int] [y int] [z int]])
+  [[x int] [y int] [z int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[x_idx   [x]]
+   [z_y_idx [z y]]])
 ----
 ok
-
-plan
-(select
-  (project abc [a b])
-  (= a 1))
-----
--> Select
- -> Project [] [1 2]
-  -> Scan [1 2 3]
- -> Filters
-  -> Func (=)
-   -> ColRef (1)
-   -> Constant (1)
 
 plan
 (select
@@ -31,10 +29,39 @@ plan
 -> Select
  -> Project [] [1 2]
   -> Join
-   -> Scan [1 2 3]
-   -> Scan [4 5 6]
+   -> Scan [1 2 3] @0
+   -> Scan [4 5 6] @0
    -> Filters
  -> Filters
   -> Func (=)
    -> ColRef (1)
    -> Constant (1)
+
+plan-memo
+(select
+  (project (join abc xyz true) [a b])
+  (= a 1))
+----
+G1
+  - Select G2 G3
+G2
+  - Project G4 [] [1 2]
+G3
+  - Filters G5
+G4
+  - Join G6 G7 G8
+G5
+  - Func G9 G10 (=)
+G6
+  - Scan [1 2 3] @0
+  - Scan [1 2 3] @1
+  - Scan [1 2 3] @2
+G7
+  - Scan [4 5 6] @0
+  - Scan [4 5 6] @1
+G8
+  - Filters
+G9
+  - ColRef (1)
+G10
+  - Constant (1)

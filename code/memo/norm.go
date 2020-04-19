@@ -6,10 +6,11 @@ import (
 	"github.com/justinj/scribe/code/scalar"
 )
 
-func (m *Memo) Scan(tableName string, cols []opt.ColumnID) *RelGroup {
+func (m *Memo) Scan(tableName string, cols []opt.ColumnID, indexId int) *RelGroup {
 	return m.internScan(Scan{
 		TableName: tableName,
 		Cols:      cols,
+		Index:     indexId,
 	})
 }
 
@@ -74,7 +75,7 @@ func (m *Memo) Select(input *RelGroup, filter scalar.Group) *RelGroup {
 
 	// TODO: make this a real rule
 	// MergeSelectJoin
-	if j, ok := input.E.(*Join); ok {
+	if j, ok := input.Unwrap().(*Join); ok {
 		return m.Join(
 			j.Left,
 			j.Right,

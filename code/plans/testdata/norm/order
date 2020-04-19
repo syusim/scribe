@@ -14,7 +14,7 @@ plan
 (order-by abc [b])
 ----
 -> Root (required ordering: [2]) 
- -> Scan [1 2 3]
+ -> Scan [1 2 3] @0
 
 plan
 (order-by abc [d])
@@ -25,4 +25,4 @@ plan
 (order-by abc [b c])
 ----
 -> Root (required ordering: [2 3]) 
- -> Scan [1 2 3]
+ -> Scan [1 2 3] @0

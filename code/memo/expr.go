@@ -1,6 +1,8 @@
 package memo
 
-import "github.com/justinj/scribe/code/lang"
+import (
+	"github.com/justinj/scribe/code/lang"
+)
 
 type relExpr interface {
 	lang.Expr
@@ -10,21 +12,23 @@ type relExpr interface {
 // Also not sure how to structure this right so that other packages and inspect it sanely.
 // TODO/idea: what if every expr had its children directly, but also was a thing in a map to a metadata thing?
 type RelGroup struct {
-	// The logical expression.
-	E  relExpr
 	Es []relExpr
 
 	Props Props
 }
 
 func (r *RelGroup) Unwrap() relExpr {
-	return r.E
+	return r.Es[0]
+}
+
+func (g *RelGroup) Add(r relExpr) {
+	g.Es = append(g.Es, r)
 }
 
 func (r *RelGroup) MemberCount() int {
-	return 1
+	return len(r.Es)
 }
 
 func (r *RelGroup) Member(i int) lang.Expr {
-	return r.E
+	return r.Es[i]
 }

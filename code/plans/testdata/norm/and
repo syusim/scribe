@@ -13,22 +13,22 @@ ok
 plan
 (select abc true)
 ----
--> Scan [1 2 3]
+-> Scan [1 2 3] @0
 
 # How does this get simplified?
 plan
 (join abc xyz true)
 ----
 -> Join
- -> Scan [1 2 3]
- -> Scan [4 5 6]
+ -> Scan [1 2 3] @0
+ -> Scan [4 5 6] @0
  -> Filters
 
 plan
 (select abc (and (= a 1) true))
 ----
 -> Select
- -> Scan [1 2 3]
+ -> Scan [1 2 3] @0
  -> Filters
   -> Func (=)
    -> ColRef (1)

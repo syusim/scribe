@@ -193,7 +193,7 @@ func EliminateProject(m *Memo, args []interface{}) lang.Group {
 func MergeProjectProject(m *Memo, args []interface{}) lang.Group {
 	input, colIDs, projections, passthrough := args[0].(*RelGroup), args[1].([]opt.ColumnID), args[2].([]scalar.Group), args[3].(opt.ColSet)
 
-	if p, ok := input.E.(*Project); ok {
+	if p, ok := input.Unwrap().(*Project); ok {
 		// passthrough is the same as before, except we need to get
 		// rid of the things that we're now computing outselves.
 		newPassthrough := passthrough.Copy()

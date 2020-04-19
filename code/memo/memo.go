@@ -1,6 +1,8 @@
 package memo
 
-import "github.com/justinj/scribe/code/scalar"
+import (
+	"github.com/justinj/scribe/code/scalar"
+)
 
 type Memo struct {
 	hashes      map[string]interface{}

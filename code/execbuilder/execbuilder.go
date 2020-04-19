@@ -56,7 +56,7 @@ func (b *builder) Build(e *memo.RelGroup, outCols []opt.ColumnID) (exec.Node, er
 }
 
 func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
-	switch o := e.E.(type) {
+	switch o := e.Unwrap().(type) {
 	case *memo.Scan:
 		tab, ok := b.cat.TableByName(o.TableName)
 		if !ok {
@@ -166,6 +166,6 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 		return b.build(o.Input)
 
 	default:
-		panic(fmt.Sprintf("unhandled: %T", e.E))
+		panic(fmt.Sprintf("unhandled: %T", e.Unwrap()))
 	}
 }

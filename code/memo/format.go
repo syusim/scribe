@@ -35,6 +35,58 @@ func Format(g lang.Group) string {
 	return buf.String()
 }
 
+// TODO: make a real tree printer?
+func FormatMemo(g lang.Group) string {
+	queue := []lang.Group{g}
+
+	ids := make(map[lang.Group]int)
+	nextId := 1
+	getId := func(g lang.Group) int {
+		if id, ok := ids[g]; ok {
+			return id
+		}
+		ids[g] = nextId
+		nextId++
+		return ids[g]
+	}
+	seen := make(map[lang.Group]struct{})
+	enqueue := func(g lang.Group) {
+		if _, ok := seen[g]; ok {
+			return
+		}
+		seen[g] = struct{}{}
+		queue = append(queue, g)
+	}
+	deque := func() (lang.Group, bool) {
+		if len(queue) == 0 {
+			return nil, false
+		}
+		var next lang.Group
+		next, queue = queue[0], queue[1:]
+		return next, true
+	}
+
+	var buf bytes.Buffer
+
+	for next, ok := deque(); ok; next, ok = deque() {
+		fmt.Fprintf(&buf, "G%d\n", getId(next))
+		for i, n := 0, next.MemberCount(); i < n; i++ {
+			expr := next.Member(i)
+			fmt.Fprintf(&buf, "  - %s", reflect.TypeOf(expr).Elem().Name())
+
+			for j, m := 0, expr.ChildCount(); j < m; j++ {
+				c := expr.Child(j)
+				fmt.Fprintf(&buf, " G%d", getId(c))
+				enqueue(c)
+			}
+			extra(&buf, expr)
+			buf.WriteByte('\n')
+		}
+	}
+
+	return buf.String()
+}
+
 func extra(buf *bytes.Buffer, e lang.Expr) {
 	switch o := e.(type) {
 	case *Scan:
@@ -45,7 +97,8 @@ func extra(buf *bytes.Buffer, e lang.Expr) {
 			}
 			fmt.Fprintf(buf, "%d", c)
 		}
-		buf.WriteByte(']')
+		buf.WriteString("] ")
+		fmt.Fprintf(buf, "@%d", o.Index)
 	case *Project:
 		buf.WriteString(" [")
 		for i, c := range o.ColIDs {

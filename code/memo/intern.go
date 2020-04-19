@@ -146,7 +146,7 @@ func (m *Memo) internScan(x Scan) *RelGroup {
 	if v, ok := m.hashes[h]; ok {
 		return v.(*RelGroup)
 	}
-	p := &RelGroup{E: &x}
+	p := &RelGroup{Es: []relExpr{&x}}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
@@ -157,7 +157,7 @@ func (m *Memo) internSelect(x Select) *RelGroup {
 	if v, ok := m.hashes[h]; ok {
 		return v.(*RelGroup)
 	}
-	p := &RelGroup{E: &x}
+	p := &RelGroup{Es: []relExpr{&x}}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
@@ -168,7 +168,7 @@ func (m *Memo) internProject(x Project) *RelGroup {
 	if v, ok := m.hashes[h]; ok {
 		return v.(*RelGroup)
 	}
-	p := &RelGroup{E: &x}
+	p := &RelGroup{Es: []relExpr{&x}}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
@@ -179,7 +179,7 @@ func (m *Memo) internJoin(x Join) *RelGroup {
 	if v, ok := m.hashes[h]; ok {
 		return v.(*RelGroup)
 	}
-	p := &RelGroup{E: &x}
+	p := &RelGroup{Es: []relExpr{&x}}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
@@ -190,7 +190,7 @@ func (m *Memo) internRoot(x Root) *RelGroup {
 	if v, ok := m.hashes[h]; ok {
 		return v.(*RelGroup)
 	}
-	p := &RelGroup{E: &x}
+	p := &RelGroup{Es: []relExpr{&x}}
 	buildProps(p)
 	m.hashes[h] = p
 	return p

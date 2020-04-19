@@ -11,7 +11,7 @@ type Props struct {
 }
 
 func buildProps(r *RelGroup) {
-	switch e := r.E.(type) {
+	switch e := r.Unwrap().(type) {
 	case *Scan:
 		for _, c := range e.Cols {
 			r.Props.OutputCols.Add(c)
