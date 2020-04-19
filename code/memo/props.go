@@ -10,7 +10,7 @@ type Props struct {
 	OutputCols opt.ColSet
 }
 
-func buildProps(r *RelExpr) {
+func buildProps(r *RelGroup) {
 	switch e := r.E.(type) {
 	case *Scan:
 		for _, c := range e.Cols {
@@ -33,12 +33,12 @@ func buildProps(r *RelExpr) {
 	}
 }
 
-func computeFreeCols(o opt.ColSet, s scalar.Expr) {
+func computeFreeCols(o opt.ColSet, s scalar.Group) {
 	if c, ok := s.(*scalar.ColRef); ok {
 		o.Add(c.Id)
 	} else {
 		for i, n := 0, s.ChildCount(); i < n; i++ {
-			computeFreeCols(o, s.Child(i).(scalar.Expr))
+			computeFreeCols(o, s.Child(i).(scalar.Group))
 		}
 	}
 }

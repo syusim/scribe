@@ -7,11 +7,17 @@ import (
 	"github.com/justinj/scribe/code/opt"
 )
 
-type Expr interface {
+type Group interface {
 	lang.Expr
+	lang.Group
 
 	Type() lang.Type
 }
+
+// type Expr interface {
+// 	// Scalar Exprs are _both_. They're groups of just themselves.
+// 	Group
+// }
 
 type ColRef struct {
 	Id opt.ColumnID
@@ -26,12 +32,23 @@ func (c *ColRef) ChildCount() int {
 	return 0
 }
 
-func (c *ColRef) Child(i int) lang.Expr {
+func (c *ColRef) Child(i int) lang.Group {
 	panic("no children")
 }
 
 func (c *ColRef) Type() lang.Type {
 	return c.Typ
+}
+
+func (c *ColRef) MemberCount() int {
+	return 1
+}
+
+func (c *ColRef) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
 }
 
 type ExecColRef struct {
@@ -43,12 +60,23 @@ func (c *ExecColRef) ChildCount() int {
 	return 0
 }
 
-func (c *ExecColRef) Child(i int) lang.Expr {
+func (c *ExecColRef) Child(i int) lang.Group {
 	panic("no children")
 }
 
 func (c *ExecColRef) Type() lang.Type {
 	return c.Typ
+}
+
+func (c *ExecColRef) MemberCount() int {
+	return 1
+}
+
+func (c *ExecColRef) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
 }
 
 // TODO: remove this wrapper?
@@ -60,7 +88,7 @@ func (c *Constant) ChildCount() int {
 	return 0
 }
 
-func (c *Constant) Child(i int) lang.Expr {
+func (c *Constant) Child(i int) lang.Group {
 	panic("no children")
 }
 
@@ -78,16 +106,27 @@ func (c *Constant) Type() lang.Type {
 	}
 }
 
+func (c *Constant) MemberCount() int {
+	return 1
+}
+
+func (c *Constant) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
+}
+
 type Plus struct {
-	Left  Expr
-	Right Expr
+	Left  Group
+	Right Group
 }
 
 func (e *Plus) ChildCount() int {
 	return 2
 }
 
-func (e *Plus) Child(i int) lang.Expr {
+func (e *Plus) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return e.Left
@@ -102,16 +141,27 @@ func (e *Plus) Type() lang.Type {
 	return lang.Int
 }
 
+func (c *Plus) MemberCount() int {
+	return 1
+}
+
+func (c *Plus) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
+}
+
 type Times struct {
-	Left  Expr
-	Right Expr
+	Left  Group
+	Right Group
 }
 
 func (e *Times) ChildCount() int {
 	return 2
 }
 
-func (e *Times) Child(i int) lang.Expr {
+func (e *Times) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return e.Left
@@ -126,16 +176,27 @@ func (e *Times) Type() lang.Type {
 	return lang.Int
 }
 
+func (c *Times) MemberCount() int {
+	return 1
+}
+
+func (c *Times) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
+}
+
 type And struct {
-	Left  Expr
-	Right Expr
+	Left  Group
+	Right Group
 }
 
 func (e *And) ChildCount() int {
 	return 2
 }
 
-func (e *And) Child(i int) lang.Expr {
+func (e *And) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return e.Left
@@ -150,15 +211,26 @@ func (e *And) Type() lang.Type {
 	return lang.Bool
 }
 
+func (c *And) MemberCount() int {
+	return 1
+}
+
+func (c *And) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
+}
+
 type Filters struct {
-	Filters []Expr
+	Filters []Group
 }
 
 func (e *Filters) ChildCount() int {
 	return len(e.Filters)
 }
 
-func (e *Filters) Child(i int) lang.Expr {
+func (e *Filters) Child(i int) lang.Group {
 	return e.Filters[i]
 }
 
@@ -166,17 +238,28 @@ func (e *Filters) Type() lang.Type {
 	return lang.Bool
 }
 
+func (c *Filters) MemberCount() int {
+	return 1
+}
+
+func (c *Filters) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
+}
+
 // TODO: Should these each be their own ops (probably)?
 type Func struct {
 	Op   lang.Func
-	Args []Expr
+	Args []Group
 }
 
 func (f *Func) ChildCount() int {
 	return len(f.Args)
 }
 
-func (f *Func) Child(i int) lang.Expr {
+func (f *Func) Child(i int) lang.Group {
 	return f.Args[i]
 }
 
@@ -190,4 +273,15 @@ func (f *Func) Type() lang.Type {
 	default:
 		panic(fmt.Sprintf("unhandled: %v", f.Op))
 	}
+}
+
+func (c *Func) MemberCount() int {
+	return 1
+}
+
+func (c *Func) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
 }

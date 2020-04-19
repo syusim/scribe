@@ -10,18 +10,16 @@ import (
 )
 
 // TODO: make a real tree printer?
-func Format(e lang.Expr) string {
+func Format(g lang.Group) string {
 	var buf bytes.Buffer
 	depth := 0
-	var p func(e lang.Expr)
-	p = func(e lang.Expr) {
+	var p func(g lang.Group)
+	p = func(g lang.Group) {
 		for i := 0; i < depth; i++ {
 			buf.WriteByte(' ')
 		}
 		buf.WriteString("-> ")
-		if r, ok := e.(*RelExpr); ok {
-			e = r.E
-		}
+		e := lang.Unwrap(g)
 		buf.WriteString(reflect.TypeOf(e).Elem().Name())
 		extra(&buf, e)
 		buf.WriteByte('\n')
@@ -32,7 +30,7 @@ func Format(e lang.Expr) string {
 		depth--
 	}
 
-	p(e)
+	p(g)
 
 	return buf.String()
 }

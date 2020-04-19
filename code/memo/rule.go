@@ -6,39 +6,39 @@ import (
 	"github.com/justinj/scribe/code/scalar"
 )
 
-type rule func(m *Memo, args []interface{}) lang.Expr
+type rule func(m *Memo, args []interface{}) lang.Group
 
 // Plus Rules.
 
-func FoldZeroPlus(m *Memo, args []interface{}) lang.Expr {
-	if eqConst(args[0].(scalar.Expr), lang.DInt(0)) {
-		return args[1].(lang.Expr)
+func FoldZeroPlus(m *Memo, args []interface{}) lang.Group {
+	if eqConst(args[0].(scalar.Group), lang.DInt(0)) {
+		return args[1].(lang.Group)
 	}
 	return nil
 }
 
-func FoldPlusZero(m *Memo, args []interface{}) lang.Expr {
-	if eqConst(args[1].(scalar.Expr), lang.DInt(0)) {
-		return args[0].(lang.Expr)
+func FoldPlusZero(m *Memo, args []interface{}) lang.Group {
+	if eqConst(args[1].(scalar.Group), lang.DInt(0)) {
+		return args[0].(lang.Group)
 	}
 	return nil
 }
 
-func AssociatePlus(m *Memo, args []interface{}) lang.Expr {
+func AssociatePlus(m *Memo, args []interface{}) lang.Group {
 	if left, ok := args[0].(*scalar.Plus); ok {
 		return m.Plus(
 			left.Left,
 			m.Plus(
 				left.Right,
-				args[1].(scalar.Expr),
+				args[1].(scalar.Group),
 			),
 		)
 	}
 	return nil
 }
 
-func SimplifyPlusPlus(m *Memo, args []interface{}) lang.Expr {
-	left, right := args[0].(scalar.Expr), args[1].(scalar.Expr)
+func SimplifyPlusPlus(m *Memo, args []interface{}) lang.Group {
+	left, right := args[0].(scalar.Group), args[1].(scalar.Group)
 	if left == right {
 		return m.Times(
 			m.Constant(lang.DInt(2)),
@@ -48,8 +48,8 @@ func SimplifyPlusPlus(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
-func SimplifyPlusTimes(m *Memo, args []interface{}) lang.Expr {
-	left, right := args[0].(scalar.Expr), args[1].(scalar.Expr)
+func SimplifyPlusTimes(m *Memo, args []interface{}) lang.Group {
+	left, right := args[0].(scalar.Group), args[1].(scalar.Group)
 	if t, ok := right.(*scalar.Times); ok {
 		if t.Right == left {
 			if c, ok := t.Left.(*scalar.Constant); ok {
@@ -65,18 +65,18 @@ func SimplifyPlusTimes(m *Memo, args []interface{}) lang.Expr {
 
 // Join Rules.
 
-func WrapJoinConditionInFilters(m *Memo, args []interface{}) lang.Expr {
-	left, right, on := args[0].(*RelExpr), args[1].(*RelExpr), args[2].(scalar.Expr)
+func WrapJoinConditionInFilters(m *Memo, args []interface{}) lang.Group {
+	left, right, on := args[0].(*RelGroup), args[1].(*RelGroup), args[2].(scalar.Group)
 	if _, ok := on.(*scalar.Filters); !ok {
 		return m.Join(
-			left, right, m.Filters([]scalar.Expr{on}),
+			left, right, m.Filters([]scalar.Group{on}),
 		)
 	}
 	return nil
 }
 
-func UnfoldJoinCondition(m *Memo, args []interface{}) lang.Expr {
-	left, right, on := args[0].(*RelExpr), args[1].(*RelExpr), args[2].(*scalar.Filters)
+func UnfoldJoinCondition(m *Memo, args []interface{}) lang.Group {
+	left, right, on := args[0].(*RelGroup), args[1].(*RelGroup), args[2].(*scalar.Filters)
 	newFilters := unfoldFilters(on.Filters)
 
 	if newFilters != nil {
@@ -86,8 +86,8 @@ func UnfoldJoinCondition(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
-func PushFilterIntoJoinLeft(m *Memo, args []interface{}) lang.Expr {
-	left, right, on := args[0].(*RelExpr), args[1].(*RelExpr), args[2].(*scalar.Filters)
+func PushFilterIntoJoinLeft(m *Memo, args []interface{}) lang.Group {
+	left, right, on := args[0].(*RelGroup), args[1].(*RelGroup), args[2].(*scalar.Filters)
 	bound, unbound := extractBoundUnbound(m, on.Filters, left.Props.OutputCols)
 
 	if len(bound) > 0 {
@@ -103,8 +103,8 @@ func PushFilterIntoJoinLeft(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
-func PushFilterIntoJoinRight(m *Memo, args []interface{}) lang.Expr {
-	left, right, on := args[0].(*RelExpr), args[1].(*RelExpr), args[2].(*scalar.Filters)
+func PushFilterIntoJoinRight(m *Memo, args []interface{}) lang.Group {
+	left, right, on := args[0].(*RelGroup), args[1].(*RelGroup), args[2].(*scalar.Filters)
 	bound, unbound := extractBoundUnbound(m, on.Filters, right.Props.OutputCols)
 
 	if len(bound) > 0 {
@@ -122,18 +122,18 @@ func PushFilterIntoJoinRight(m *Memo, args []interface{}) lang.Expr {
 
 // Select Rules.
 
-func WrapSelectConditionInFilters(m *Memo, args []interface{}) lang.Expr {
-	input, filter := args[0].(*RelExpr), args[1].(scalar.Expr)
+func WrapSelectConditionInFilters(m *Memo, args []interface{}) lang.Group {
+	input, filter := args[0].(*RelGroup), args[1].(scalar.Group)
 	if _, ok := filter.(*scalar.Filters); !ok {
 		return m.Select(
-			input, m.Filters([]scalar.Expr{filter}),
+			input, m.Filters([]scalar.Group{filter}),
 		)
 	}
 	return nil
 }
 
-func UnfoldSelectCondition(m *Memo, args []interface{}) lang.Expr {
-	input, filter := args[0].(*RelExpr), args[1].(*scalar.Filters)
+func UnfoldSelectCondition(m *Memo, args []interface{}) lang.Group {
+	input, filter := args[0].(*RelGroup), args[1].(*scalar.Filters)
 	newFilters := unfoldFilters(filter.Filters)
 
 	if newFilters != nil {
@@ -143,13 +143,13 @@ func UnfoldSelectCondition(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
-func SimplifySelectFilters(m *Memo, args []interface{}) lang.Expr {
-	input, filter := args[0].(*RelExpr), args[1].(*scalar.Filters)
+func SimplifySelectFilters(m *Memo, args []interface{}) lang.Group {
+	input, filter := args[0].(*RelGroup), args[1].(*scalar.Filters)
 
-	var newFilters []scalar.Expr
+	var newFilters []scalar.Group
 	for i, f := range filter.Filters {
 		if eqConst(f, lang.DBool(true)) {
-			newFilters = make([]scalar.Expr, i)
+			newFilters = make([]scalar.Group, i)
 			copy(newFilters, filter.Filters)
 		} else if newFilters != nil {
 			newFilters = append(newFilters, f)
@@ -165,8 +165,8 @@ func SimplifySelectFilters(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
-func EliminateSelect(m *Memo, args []interface{}) lang.Expr {
-	input, filter := args[0].(*RelExpr), args[1].(*scalar.Filters)
+func EliminateSelect(m *Memo, args []interface{}) lang.Group {
+	input, filter := args[0].(*RelGroup), args[1].(*scalar.Filters)
 	if len(filter.Filters) == 0 {
 		return input
 	}
@@ -176,8 +176,8 @@ func EliminateSelect(m *Memo, args []interface{}) lang.Expr {
 
 // Project Rules.
 
-func EliminateProject(m *Memo, args []interface{}) lang.Expr {
-	input, _, projections, passthrough := args[0].(*RelExpr), args[1].([]opt.ColumnID), args[2].([]scalar.Expr), args[3].(opt.ColSet)
+func EliminateProject(m *Memo, args []interface{}) lang.Group {
+	input, _, projections, passthrough := args[0].(*RelGroup), args[1].([]opt.ColumnID), args[2].([]scalar.Group), args[3].(opt.ColSet)
 
 	if len(projections) > 0 {
 		return nil
@@ -190,8 +190,8 @@ func EliminateProject(m *Memo, args []interface{}) lang.Expr {
 	return nil
 }
 
-func MergeProjectProject(m *Memo, args []interface{}) lang.Expr {
-	input, colIDs, projections, passthrough := args[0].(*RelExpr), args[1].([]opt.ColumnID), args[2].([]scalar.Expr), args[3].(opt.ColSet)
+func MergeProjectProject(m *Memo, args []interface{}) lang.Group {
+	input, colIDs, projections, passthrough := args[0].(*RelGroup), args[1].([]opt.ColumnID), args[2].([]scalar.Group), args[3].(opt.ColSet)
 
 	if p, ok := input.E.(*Project); ok {
 		// passthrough is the same as before, except we need to get
@@ -209,7 +209,7 @@ func MergeProjectProject(m *Memo, args []interface{}) lang.Expr {
 		// * columns we were passing through before being computed now
 		//   and
 		// * input columns being inlined into our projections.
-		newProjections := make([]scalar.Expr, len(projections), len(projections)+len(toInclude))
+		newProjections := make([]scalar.Group, len(projections), len(projections)+len(toInclude))
 
 		for i := range newProjections {
 			newProjections[i] = inlineIn(m, projections[i], p.Projections, p.ColIDs)

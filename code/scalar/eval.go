@@ -6,7 +6,8 @@ import (
 	"github.com/justinj/scribe/code/lang"
 )
 
-func Eval(e Expr, binding lang.Row) (lang.Datum, error) {
+func Eval(g Group, binding lang.Row) (lang.Datum, error) {
+	e := lang.Unwrap(g)
 	switch e := e.(type) {
 	case *Constant:
 		return e.D, nil

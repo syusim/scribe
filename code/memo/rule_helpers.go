@@ -1,13 +1,12 @@
 package memo
 
 import (
-	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
-func eqConst(s scalar.Expr, d lang.Datum) bool {
+func eqConst(s scalar.Group, d lang.Datum) bool {
 	if c, ok := s.(*scalar.Constant); ok {
 		if c.D.Type() != d.Type() {
 			return false
@@ -17,16 +16,16 @@ func eqConst(s scalar.Expr, d lang.Datum) bool {
 	return false
 }
 
-func concat(a, b *scalar.Filters) []scalar.Expr {
-	return append(append(make([]scalar.Expr, 0), a.Filters...), b.Filters...)
+func concat(a, b *scalar.Filters) []scalar.Group {
+	return append(append(make([]scalar.Group, 0), a.Filters...), b.Filters...)
 }
 
-func unfoldFilters(f []scalar.Expr) []scalar.Expr {
-	var newFilters []scalar.Expr
+func unfoldFilters(f []scalar.Group) []scalar.Group {
+	var newFilters []scalar.Group
 	for i, c := range f {
 		if a, ok := c.(*scalar.And); ok {
 			if newFilters == nil {
-				newFilters = make([]scalar.Expr, 0)
+				newFilters = make([]scalar.Group, 0)
 				newFilters = append(newFilters, f[:i]...)
 			}
 			// TODO: this is sort of inefficient, since we're relying on the rule to
@@ -43,9 +42,9 @@ func unfoldFilters(f []scalar.Expr) []scalar.Expr {
 
 func extractBoundUnbound(
 	m *Memo,
-	filters []scalar.Expr,
+	filters []scalar.Group,
 	cols opt.ColSet,
-) ([]scalar.Expr, []scalar.Expr) {
+) ([]scalar.Group, []scalar.Group) {
 	canPush := false
 	for _, f := range filters {
 		freeVars := m.GetScalarProps(f).FreeVars
@@ -59,8 +58,8 @@ func extractBoundUnbound(
 		return nil, filters
 	}
 
-	var bound []scalar.Expr
-	var unbound []scalar.Expr
+	var bound []scalar.Group
+	var unbound []scalar.Group
 	for _, f := range filters {
 		freeVars := m.GetScalarProps(f).FreeVars
 		if freeVars.SubsetOf(cols) {
@@ -74,11 +73,11 @@ func extractBoundUnbound(
 
 func inlineIn(
 	m *Memo,
-	e scalar.Expr,
-	projs []scalar.Expr,
+	e scalar.Group,
+	projs []scalar.Group,
 	ids []opt.ColumnID,
-) scalar.Expr {
-	return exec.ScalarExpr(m.Walk(e, func(in lang.Expr) lang.Expr {
+) scalar.Group {
+	return m.Walk(e, func(in lang.Group) lang.Group {
 		if ref, ok := in.(*scalar.ColRef); ok {
 			for i, col := range ids {
 				if col == ref.Id {
@@ -87,5 +86,5 @@ func inlineIn(
 			}
 		}
 		return in
-	}).(scalar.Expr))
+	}).(scalar.Group)
 }

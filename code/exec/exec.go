@@ -10,7 +10,7 @@ import (
 	"github.com/justinj/scribe/code/scalar"
 ) //)
 
-type ScalarExpr scalar.Expr
+type ScalarExpr scalar.Group
 
 //(node-interface
 type Node interface {

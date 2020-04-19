@@ -28,7 +28,7 @@ func TestHash(t *testing.T) {
 		}, {
 			scalar.Func{
 				Op:   lang.Plus,
-				Args: []scalar.Expr{},
+				Args: []scalar.Group{},
 			},
 			"Func/+/",
 		}, {

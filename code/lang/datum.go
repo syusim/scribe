@@ -13,7 +13,7 @@ type Datum interface {
 	// this should actually be the expr thing
 	Type() Type
 
-	// To meet the scalar.Expr interface.
+	// To meet the scalar.Group interface.
 	Eval(binding Row) (Datum, error)
 }
 
@@ -29,12 +29,20 @@ func (d DInt) String() string {
 	return buf.String()
 }
 
-func (d DInt) Child(i int) Expr {
+func (d DInt) Child(i int) Group {
 	panic("no children")
 }
 
 func (d DInt) ChildCount() int {
 	return 0
+}
+
+func (d DInt) MemberCount() int {
+	return 1
+}
+
+func (d DInt) Member(i int) Expr {
+	return d
 }
 
 func (d DInt) Eval(_ Row) (Datum, error) {
@@ -57,12 +65,20 @@ func (d DString) String() string {
 	return buf.String()
 }
 
-func (d DString) Child(i int) Expr {
+func (d DString) Child(i int) Group {
 	panic("no children")
 }
 
 func (d DString) ChildCount() int {
 	return 0
+}
+
+func (d DString) MemberCount() int {
+	return 1
+}
+
+func (d DString) Member(i int) Expr {
+	return d
 }
 
 func (d DString) Eval(_ Row) (Datum, error) {
@@ -89,12 +105,20 @@ func (d DBool) String() string {
 	return buf.String()
 }
 
-func (d DBool) Child(i int) Expr {
+func (d DBool) Child(i int) Group {
 	panic("no children")
 }
 
 func (d DBool) ChildCount() int {
 	return 0
+}
+
+func (d DBool) MemberCount() int {
+	return 1
+}
+
+func (d DBool) Member(i int) Expr {
+	return d
 }
 
 func (d DBool) Eval(_ Row) (Datum, error) {

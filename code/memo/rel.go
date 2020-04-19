@@ -20,21 +20,21 @@ func (s *Scan) ChildCount() int {
 	return 0
 }
 
-func (s *Scan) Child(i int) lang.Expr {
+func (s *Scan) Child(i int) lang.Group {
 	panic("no children")
 }
 
 type Join struct {
-	Left  *RelExpr
-	Right *RelExpr
-	On    scalar.Expr
+	Left  *RelGroup
+	Right *RelGroup
+	On    scalar.Group
 }
 
 func (j *Join) ChildCount() int {
 	return 3
 }
 
-func (j *Join) Child(i int) lang.Expr {
+func (j *Join) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return j.Left
@@ -48,10 +48,10 @@ func (j *Join) Child(i int) lang.Expr {
 }
 
 type Project struct {
-	Input *RelExpr
+	Input *RelGroup
 
 	ColIDs          []opt.ColumnID
-	Projections     []scalar.Expr
+	Projections     []scalar.Group
 	PassthroughCols opt.ColSet
 }
 
@@ -59,7 +59,7 @@ func (p *Project) ChildCount() int {
 	return 1 + len(p.Projections)
 }
 
-func (p *Project) Child(i int) lang.Expr {
+func (p *Project) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return p.Input
@@ -69,16 +69,16 @@ func (p *Project) Child(i int) lang.Expr {
 }
 
 type Select struct {
-	Input *RelExpr
+	Input *RelGroup
 	// TODO: unify terminology here: is it filter or predicate?
-	Filter scalar.Expr
+	Filter scalar.Group
 }
 
 func (s *Select) ChildCount() int {
 	return 2
 }
 
-func (s *Select) Child(i int) lang.Expr {
+func (s *Select) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return s.Input
@@ -90,7 +90,7 @@ func (s *Select) Child(i int) lang.Expr {
 }
 
 type Root struct {
-	Input *RelExpr
+	Input *RelGroup
 
 	Ordering opt.Ordering
 }
@@ -99,7 +99,7 @@ func (r *Root) ChildCount() int {
 	return 1
 }
 
-func (r *Root) Child(i int) lang.Expr {
+func (r *Root) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return r.Input

@@ -7,7 +7,16 @@ import (
 
 type Expr interface {
 	ChildCount() int
-	Child(i int) Expr
+	Child(i int) Group
+}
+
+type Group interface {
+	MemberCount() int
+	Member(i int) Expr
+}
+
+func Unwrap(g Group) Expr {
+	return g.Member(0)
 }
 
 type Type int

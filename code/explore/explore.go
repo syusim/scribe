@@ -6,5 +6,5 @@ type explorer struct {
 	m *memo.Memo
 }
 
-func (e *explorer) ExploreGroup(r *memo.RelExpr) {
+func (e *explorer) ExploreGroup(r *memo.RelGroup) {
 }

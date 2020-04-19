@@ -44,7 +44,7 @@ func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	}
 }
 
-func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
+func (b *builder) Build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 	// This is legal at the root, and nowhere else.
 	if o, ok := e.(*ast.OrderBy); ok {
 		m, s, err := b.build(o.Input)
@@ -67,7 +67,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 }
 
 // TODO: extract each arm
-func (b *builder) build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
+func (b *builder) build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 	switch a := e.(type) {
 	case *ast.TableRef:
 		tab, ok := b.cat.TableByName(a.Name)
@@ -121,7 +121,7 @@ func (b *builder) build(e ast.RelExpr) (*memo.RelExpr, *scope, error) {
 			return nil, nil, err
 		}
 
-		exprs := make([]scalar.Expr, 0, len(a.Exprs))
+		exprs := make([]scalar.Group, 0, len(a.Exprs))
 		outCols := make([]opt.ColumnID, 0, len(exprs))
 
 		outScope := newScope()

@@ -8,7 +8,7 @@ import (
 	"github.com/justinj/scribe/code/scalar"
 )
 
-func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Expr, error) {
+func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Group, error) {
 	switch a := e.(type) {
 	case ast.ColumnReference:
 		id, typ, ok := scope.resolve(string(a))
@@ -17,7 +17,7 @@ func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Expr, error) {
 		}
 		return b.memo.ColRef(id, typ), nil
 	case *ast.ScalarFunc:
-		args := make([]scalar.Expr, len(a.Args))
+		args := make([]scalar.Group, len(a.Args))
 		// TODO: i'm very inconsistent in my use of the two
 		// arg-syntax, fix that up.
 		for i := range a.Args {

@@ -89,3 +89,25 @@ There's a special operator that is only valid at the root, called `order-by`.
 (order-by (select foo (= x 3))
   [y])
 ```
+
+---
+repr
+
+maybe there's a reasonable argument that there should be two reprs: a repr without groups and a repr with groups.
+
+The weird thing is that there is 3 things and they're all related in the same ways:
+
+A. Scalar Expr
+B. Relational Group
+C. Relational Expression
+
+A and C are the same because they have defined children and represent concrete expressions
+A and B are similar because they ARE children, they are how people hold onto them
+C and B are similar because they are both relational.
+
+We can either unify A and B or A and C, but if we do both we have to unify B and C which is what I'm doing now.
+
+    1       2
+B <---> A <---> C
+
+Maybe 1 is correct...

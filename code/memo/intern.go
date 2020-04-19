@@ -18,7 +18,7 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 		fmt.Fprintf(buf, "%d", e)
 	case string:
 		buf.WriteString(e)
-	case *RelExpr:
+	case *RelGroup:
 		fmt.Fprintf(buf, "%p", e)
 	case opt.ColumnID:
 		fmt.Fprintf(buf, "%d", e)
@@ -40,9 +40,9 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 			}
 			fmt.Fprintf(buf, "%d", c)
 		}
-	case scalar.Expr:
+	case scalar.Group:
 		fmt.Fprintf(buf, "%p", e)
-	case []scalar.Expr:
+	case []scalar.Group:
 		for _, c := range e {
 			fmt.Fprintf(buf, "%p", c)
 		}
@@ -141,56 +141,56 @@ func (m *Memo) internFunc(x scalar.Func) *scalar.Func {
 	return p
 }
 
-func (m *Memo) internScan(x Scan) *RelExpr {
+func (m *Memo) internScan(x Scan) *RelGroup {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*RelExpr)
+		return v.(*RelGroup)
 	}
-	p := &RelExpr{E: &x}
+	p := &RelGroup{E: &x}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internSelect(x Select) *RelExpr {
+func (m *Memo) internSelect(x Select) *RelGroup {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*RelExpr)
+		return v.(*RelGroup)
 	}
-	p := &RelExpr{E: &x}
+	p := &RelGroup{E: &x}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internProject(x Project) *RelExpr {
+func (m *Memo) internProject(x Project) *RelGroup {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*RelExpr)
+		return v.(*RelGroup)
 	}
-	p := &RelExpr{E: &x}
+	p := &RelGroup{E: &x}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internJoin(x Join) *RelExpr {
+func (m *Memo) internJoin(x Join) *RelGroup {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*RelExpr)
+		return v.(*RelGroup)
 	}
-	p := &RelExpr{E: &x}
+	p := &RelGroup{E: &x}
 	buildProps(p)
 	m.hashes[h] = p
 	return p
 }
 
-func (m *Memo) internRoot(x Root) *RelExpr {
+func (m *Memo) internRoot(x Root) *RelGroup {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
-		return v.(*RelExpr)
+		return v.(*RelGroup)
 	}
-	p := &RelExpr{E: &x}
+	p := &RelGroup{E: &x}
 	buildProps(p)
 	m.hashes[h] = p
 	return p

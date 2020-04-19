@@ -23,8 +23,8 @@ func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	}
 }
 
-func (b *builder) buildScalar(e scalar.Expr, m opt.ColMap) (exec.ScalarExpr, error) {
-	return exec.ScalarExpr(b.memo.Walk(e, func(in lang.Expr) lang.Expr {
+func (b *builder) buildScalar(e scalar.Group, m opt.ColMap) (exec.ScalarExpr, error) {
+	return exec.ScalarExpr(b.memo.Walk(e, func(in lang.Group) lang.Group {
 		if ref, ok := in.(*scalar.ColRef); ok {
 			idx, _ := m.Get(ref.Id)
 			return &scalar.ExecColRef{
@@ -33,10 +33,10 @@ func (b *builder) buildScalar(e scalar.Expr, m opt.ColMap) (exec.ScalarExpr, err
 			}
 		}
 		return in
-	}).(scalar.Expr)), nil
+	}).(scalar.Group)), nil
 }
 
-func (b *builder) Build(e *memo.RelExpr, outCols []opt.ColumnID) (exec.Node, error) {
+func (b *builder) Build(e *memo.RelGroup, outCols []opt.ColumnID) (exec.Node, error) {
 	n, m, err := b.build(e)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (b *builder) Build(e *memo.RelExpr, outCols []opt.ColumnID) (exec.Node, err
 	return exec.Project(n, out), nil
 }
 
-func (b *builder) build(e *memo.RelExpr) (exec.Node, opt.ColMap, error) {
+func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 	switch o := e.E.(type) {
 	case *memo.Scan:
 		tab, ok := b.cat.TableByName(o.TableName)
