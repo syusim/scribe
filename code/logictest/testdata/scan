@@ -26,3 +26,13 @@ exec
 [2 "two" false]
 [3 "three" false]
 [4 "four" true]
+
+exec
+(run (select foo (= x 1)))
+----
+[1 "one" true]
+
+exec
+(run (select foo (= x 2)))
+----
+[2 "two" false]

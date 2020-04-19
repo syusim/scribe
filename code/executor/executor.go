@@ -9,7 +9,9 @@ import (
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/execbuilder"
+	"github.com/justinj/scribe/code/explore"
 	"github.com/justinj/scribe/code/memo"
+	"github.com/justinj/scribe/code/optimize"
 )
 
 type executor struct {
@@ -47,6 +49,9 @@ func (e *executor) Run(cmd string) (Result, error) {
 		if err != nil {
 			return Result{}, err
 		}
+
+		explore.Explore(mem, e.catalog, rel)
+		optimize.Optimize(rel)
 
 		// The relational representation of the plan doesn't have a notion of the
 		// ordering of columns, however, that information is encoded in the order

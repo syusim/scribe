@@ -1,16 +1,18 @@
 package memo
 
 import (
+	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
-func (m *Memo) Scan(tableName string, cols []opt.ColumnID, indexId int) *RelGroup {
+func (m *Memo) Scan(tableName string, cols []opt.ColumnID, indexId int, constraint constraint.Constraint) *RelGroup {
 	return m.internScan(Scan{
-		TableName: tableName,
-		Cols:      cols,
-		Index:     indexId,
+		TableName:  tableName,
+		Cols:       cols,
+		Index:      indexId,
+		Constraint: constraint,
 	})
 }
 
@@ -130,6 +132,10 @@ func (m *Memo) Times(left, right scalar.Group) scalar.Group {
 
 func (m *Memo) And(left, right scalar.Group) scalar.Group {
 	return m.internAnd(scalar.And{left, right})
+}
+
+func (m *Memo) Eq(left, right scalar.Group) scalar.Group {
+	return m.internEq(scalar.Eq{left, right})
 }
 
 func (m *Memo) Filters(args []scalar.Group) scalar.Group {

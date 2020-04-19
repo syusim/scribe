@@ -30,6 +30,6 @@ plan
 -> Select
  -> Scan [1 2 3] @0
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> Constant (1)

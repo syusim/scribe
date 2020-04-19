@@ -27,6 +27,16 @@ func RowCompare(a, b lang.Row, ord []ColOrdinal) lang.CmpResult {
 	return lang.EQ
 }
 
+func KeyCompare(a lang.Row, b lang.Key, ord []ColOrdinal) lang.CmpResult {
+	for i, idx := range ord {
+		cmp := lang.Compare(a[idx], b[i])
+		if cmp != lang.EQ {
+			return cmp
+		}
+	}
+	return lang.EQ
+}
+
 ////(relation.string
 //func (t Relation) String() string {
 //	widest := make([]int, len(t.ColNames))

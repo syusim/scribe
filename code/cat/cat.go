@@ -11,12 +11,16 @@ import (
 
 type Index struct {
 	name     string
-	ordering []opt.ColOrdinal
+	Ordering []opt.ColOrdinal
 	data     *index.T
 }
 
 func (i *Index) Scan() *index.Iterator {
 	return i.data.Iter()
+}
+
+func (i *Index) ScanGT(key lang.Key) *index.Iterator {
+	return i.data.SeekGT(key)
 }
 
 func (i *Index) ScanGE(key lang.Key) *index.Iterator {
@@ -109,7 +113,7 @@ func (c *Catalog) AddTable(def *ast.CreateTable) error {
 			ords[j] = opt.ColOrdinal(nextOrd)
 		}
 
-		tab.indexes[i].ordering = ords
+		tab.indexes[i].Ordering = ords
 		tab.indexes[i].data = index.New(def.Data, ords)
 	}
 

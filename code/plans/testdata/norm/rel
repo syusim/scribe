@@ -21,7 +21,7 @@ plan
 -> Select
  -> Scan [1 2 3] @0
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> Constant (3)
 
@@ -54,7 +54,7 @@ plan
  -> Scan [1 2 3] @0
  -> Scan [4 5 6] @0
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> ColRef (4)
 
@@ -67,12 +67,12 @@ plan
  -> Select
   -> Scan [1 2 3] @0
   -> Filters
-   -> Func (=)
+   -> Eq
     -> ColRef (2)
     -> Constant (3)
  -> Scan [4 5 6] @0
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> ColRef (4)
 
@@ -86,11 +86,11 @@ plan
  -> Select
   -> Scan [4 5 6] @0
   -> Filters
-   -> Func (=)
+   -> Eq
     -> ColRef (5)
     -> Constant (3)
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> ColRef (4)
 
@@ -103,17 +103,17 @@ plan
  -> Select
   -> Scan [1 2 3] @0
   -> Filters
-   -> Func (=)
+   -> Eq
     -> ColRef (3)
     -> Constant (3)
  -> Select
   -> Scan [4 5 6] @0
   -> Filters
-   -> Func (=)
+   -> Eq
     -> ColRef (5)
     -> Constant (3)
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> ColRef (4)
 
@@ -126,16 +126,16 @@ plan
  -> Select
   -> Scan [1 2 3] @0
   -> Filters
-   -> Func (=)
+   -> Eq
     -> ColRef (3)
     -> Constant (3)
  -> Select
   -> Scan [4 5 6] @0
   -> Filters
-   -> Func (=)
+   -> Eq
     -> ColRef (5)
     -> Constant (3)
  -> Filters
-  -> Func (=)
+  -> Eq
    -> ColRef (1)
    -> ColRef (4)

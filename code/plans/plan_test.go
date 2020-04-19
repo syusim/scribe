@@ -10,6 +10,7 @@ import (
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/explore"
 	"github.com/justinj/scribe/code/memo"
+	"github.com/justinj/scribe/code/optimize"
 )
 
 func TestNorm(t *testing.T) {
@@ -68,6 +69,22 @@ func TestNorm(t *testing.T) {
 				explore.Explore(m, catalog, e)
 
 				return memo.FormatMemo(e)
+			case "plan-full":
+				expr, err := ast.ParseRelExpr(td.Input)
+				if err != nil {
+					return fmt.Sprintf("error: %s\n", err)
+				}
+				m := memo.New()
+				b := builder.New(catalog, m)
+				e, _, err := b.Build(expr)
+
+				explore.Explore(m, catalog, e)
+				optimize.Optimize(e)
+
+				if err != nil {
+					return fmt.Sprintf("error: %s\n", err)
+				}
+				return memo.Format(e)
 			default:
 				panic("unhandled")
 			}

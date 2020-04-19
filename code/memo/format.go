@@ -99,6 +99,10 @@ func extra(buf *bytes.Buffer, e lang.Expr) {
 		}
 		buf.WriteString("] ")
 		fmt.Fprintf(buf, "@%d", o.Index)
+		if o.Constraint.Start != nil || o.Constraint.End != nil {
+			buf.WriteByte(' ')
+			o.Constraint.Format(buf)
+		}
 	case *Project:
 		buf.WriteString(" [")
 		for i, c := range o.ColIDs {

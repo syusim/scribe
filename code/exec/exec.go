@@ -4,6 +4,8 @@ package exec
 import (
 	"sort"
 
+	"github.com/justinj/scribe/code/cat"
+	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
@@ -26,17 +28,39 @@ type Node interface {
 //(scan
 type scan struct {
 	iter *index.Iterator
+	// TODO: need this to be a disjunction.
+	constraint constraint.Constraint
+	ordering   []opt.ColOrdinal
 }
 
 func (s *scan) Start() {}
 
 func (s *scan) Next() (lang.Row, bool) {
-	return s.iter.Next()
+	next, ok := s.iter.Next()
+	if s.constraint.End != nil {
+		cmp := opt.KeyCompare(next, s.constraint.End, s.ordering)
+		if cmp == lang.GT || cmp == lang.EQ && !s.constraint.InclusiveEnd {
+			return nil, false
+		}
+	}
+	return next, ok
 }
 
-func Scan(iter *index.Iterator) Node {
+func Scan(idx *cat.Index, constraint constraint.Constraint) Node {
+	var iter *index.Iterator
+	if constraint.Start != nil {
+		if constraint.InclusiveStart {
+			iter = idx.ScanGE(constraint.Start)
+		} else {
+			iter = idx.ScanGT(constraint.Start)
+		}
+	} else {
+		iter = idx.Scan()
+	}
 	return &scan{
-		iter: iter,
+		iter:       iter,
+		constraint: constraint,
+		ordering:   idx.Ordering,
 	}
 } //)
 

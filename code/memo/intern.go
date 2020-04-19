@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
@@ -20,6 +21,8 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 		buf.WriteString(e)
 	case *RelGroup:
 		fmt.Fprintf(buf, "%p", e)
+	case constraint.Constraint:
+		e.Format(buf)
 	case opt.ColumnID:
 		fmt.Fprintf(buf, "%d", e)
 	case opt.ColSet:
@@ -95,6 +98,16 @@ func (m *Memo) internAnd(x scalar.And) *scalar.And {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {
 		return v.(*scalar.And)
+	}
+	p := &x
+	m.hashes[h] = p
+	return p
+}
+
+func (m *Memo) internEq(x scalar.Eq) *scalar.Eq {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*scalar.Eq)
 	}
 	p := &x
 	m.hashes[h] = p

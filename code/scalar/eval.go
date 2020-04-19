@@ -35,23 +35,19 @@ func Eval(g Group, binding lang.Row) (lang.Datum, error) {
 			return lang.DBool(false), nil
 		}
 		return Eval(e.Right, binding)
-	case *Func:
-		switch e.Op {
-		case lang.Eq:
-			left, err := Eval(e.Args[0], binding)
-			if err != nil {
-				return nil, err
-			}
-			right, err := Eval(e.Args[1], binding)
-			if err != nil {
-				return nil, err
-			}
-			if lang.Compare(left, right) == lang.EQ {
-				return lang.DBool(true), nil
-			}
-			return lang.DBool(false), nil
+	case *Eq:
+		left, err := Eval(e.Left, binding)
+		if err != nil {
+			return nil, err
 		}
-		return lang.DBool(true), nil
+		right, err := Eval(e.Right, binding)
+		if err != nil {
+			return nil, err
+		}
+		if lang.Compare(left, right) == lang.EQ {
+			return lang.DBool(true), nil
+		}
+		return lang.DBool(false), nil
 	case lang.Datum:
 		return e, nil
 	default:

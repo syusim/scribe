@@ -18,7 +18,7 @@ func TestHash(t *testing.T) {
 				TableName: "abc",
 				Cols:      []opt.ColumnID{1, 2, 3},
 			},
-			"Scan/abc/1,2,3/0",
+			"Scan/abc/1,2,3/0/( - )",
 		}, {
 			scalar.ColRef{
 				Id:  1,

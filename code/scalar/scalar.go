@@ -222,6 +222,41 @@ func (c *And) Member(i int) lang.Expr {
 	return c
 }
 
+type Eq struct {
+	Left  Group
+	Right Group
+}
+
+func (e *Eq) ChildCount() int {
+	return 2
+}
+
+func (e *Eq) Child(i int) lang.Group {
+	switch i {
+	case 0:
+		return e.Left
+	case 1:
+		return e.Right
+	default:
+		panic("out of bounds")
+	}
+}
+
+func (e *Eq) Type() lang.Type {
+	return lang.Bool
+}
+
+func (c *Eq) MemberCount() int {
+	return 1
+}
+
+func (c *Eq) Member(i int) lang.Expr {
+	if i != 0 {
+		panic("out of bounds")
+	}
+	return c
+}
+
 type Filters struct {
 	Filters []Group
 }

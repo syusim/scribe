@@ -80,24 +80,27 @@ func (idx *T) Iter() *Iterator {
 	}
 } //)
 
-//(index.seekge
 func (idx *T) SeekGE(key lang.Key) *Iterator {
-	//[index.seekge-slow
-	//start := 0
-	//for start < len(idx.data) && compareKey(idx.data[start], key, idx.orderBy) == lt {
-	//	start++
-	//}
-	//]
-	//(index.seekge-binsearch
 	start := sort.Search(len(idx.data), func(i int) bool {
 		return compareKey(idx.data[i], key, idx.orderBy) != lt
-	}) //)
+	})
 
 	return &Iterator{
 		index: idx,
 		pos:   start,
 	}
-} //)
+}
+
+func (idx *T) SeekGT(key lang.Key) *Iterator {
+	start := sort.Search(len(idx.data), func(i int) bool {
+		return compareKey(idx.data[i], key, idx.orderBy) == gt
+	})
+
+	return &Iterator{
+		index: idx,
+		pos:   start,
+	}
+}
 
 //(index.it.next
 func (it *Iterator) Next() (lang.Row, bool) {

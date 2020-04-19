@@ -5,6 +5,7 @@ import (
 
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/cat"
+	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
 	"github.com/justinj/scribe/code/opt"
@@ -86,7 +87,8 @@ func (b *builder) build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 		}
 
 		// TODO: look it up in the catalog to ensure it exists.
-		return b.memo.Scan(a.Name, cols, 0), s, nil
+		// TODO: make a logical version of this?
+		return b.memo.Scan(a.Name, cols, 0, constraint.Constraint{}), s, nil
 	case *ast.Select:
 		input, s, err := b.build(a.Input)
 		if err != nil {

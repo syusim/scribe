@@ -1,6 +1,7 @@
 package memo
 
 import (
+	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
@@ -13,7 +14,8 @@ type Scan struct {
 	Cols      []opt.ColumnID
 
 	// Index is the ordinal of the index in the given table.
-	Index int
+	Index      int
+	Constraint constraint.Constraint
 }
 
 func (s *Scan) ChildCount() int {

@@ -36,6 +36,7 @@ func (b *builder) BuildScalar(e ast.Expr, scope *scope) (scalar.Group, error) {
 			if args[0].Type() != args[1].Type() {
 				return nil, fmt.Errorf("arguments to = must be same type, got (= %v %v)", args[0].Type(), args[1].Type())
 			}
+			return b.memo.Eq(args[0], args[1]), nil
 		case lang.And:
 			if len(args) != 2 {
 				return nil, fmt.Errorf("and takes 2 args")

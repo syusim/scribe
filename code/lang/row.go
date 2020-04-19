@@ -15,3 +15,12 @@ func (r Row) Format(buf *bytes.Buffer) {
 	}
 	buf.WriteByte(']')
 }
+
+func (k Key) Format(buf *bytes.Buffer) {
+	for i, d := range k {
+		if i > 0 {
+			buf.WriteByte('/')
+		}
+		d.Format(buf)
+	}
+}

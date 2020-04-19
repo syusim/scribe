@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/justinj/scribe/code/cat"
+	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
+	"github.com/justinj/scribe/code/scalar"
 )
 
 type explorer struct {
@@ -43,23 +45,41 @@ func (e *explorer) ExploreGroup(r lang.Group) {
 			e.ExploreGroup(next.Child(i))
 		}
 
-		if s, ok := next.(*memo.Scan); ok {
-			// Only generate from the canonical one.
-			if s.Index == 0 {
-				tab, ok := e.c.TableByName(s.TableName)
-				if !ok {
-					panic(fmt.Sprintf("table gone?? %s", s.TableName))
-				}
-				for i, n := 1, tab.IndexCount(); i < n; i++ {
-					// OK this kind of sucks but just do it!!
-					newExpr := e.m.Scan(
-						s.TableName,
-						s.Cols,
-						i,
-					).Unwrap()
-					// TODO: add to queue?
+		if sel, ok := next.(*memo.Select); ok {
+			// TODO: We have to iterate over each member rather than unwrapping here.
+			if scan, ok := sel.Input.Unwrap().(*memo.Scan); ok {
+				// Only generate from the canonical one.
+				if scan.Index == 0 && scan.Constraint.IsUnconstrained() {
+					tab, ok := e.c.TableByName(scan.TableName)
+					if !ok {
+						panic(fmt.Sprintf("table gone?? %s", scan.TableName))
+					}
+					for i, n := 0, tab.IndexCount(); i < n; i++ {
+						newConstraints, newFilters := constraint.Generate(
+							lang.Unwrap(sel.Filter).(*scalar.Filters),
+							scan.Cols,
+							tab.Index(i),
+						)
 
-					r.(*memo.RelGroup).Add(newExpr)
+						// TODO: remove this
+						if newConstraints.IsUnconstrained() && i == 0 {
+							continue
+						}
+
+						// OK this kind of sucks but just do it!!
+						newExpr := e.m.Select(
+							e.m.Scan(
+								scan.TableName,
+								scan.Cols,
+								i,
+								newConstraints,
+							),
+							e.m.Filters(newFilters),
+						).Unwrap()
+
+						// TODO: add to queue!
+						r.(*memo.RelGroup).Add(newExpr)
+					}
 				}
 			}
 		}

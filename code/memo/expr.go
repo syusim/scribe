@@ -17,6 +17,10 @@ type RelGroup struct {
 	Props Props
 }
 
+func (r *RelGroup) Ratchet(i int) {
+	r.Es[0], r.Es[i] = r.Es[i], r.Es[0]
+}
+
 func (r *RelGroup) Unwrap() relExpr {
 	return r.Es[0]
 }

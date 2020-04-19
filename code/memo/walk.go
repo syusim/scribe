@@ -22,6 +22,10 @@ func (m *Memo) Walk(in lang.Group, f func(e lang.Group) lang.Group) lang.Group {
 		left := m.Walk(e.Left, f).(scalar.Group)
 		right := m.Walk(e.Right, f).(scalar.Group)
 		return f(m.Times(left, right))
+	case *scalar.Eq:
+		left := m.Walk(e.Left, f).(scalar.Group)
+		right := m.Walk(e.Right, f).(scalar.Group)
+		return f(m.Eq(left, right))
 	case *scalar.And:
 		left := m.Walk(e.Left, f).(scalar.Group)
 		right := m.Walk(e.Right, f).(scalar.Group)

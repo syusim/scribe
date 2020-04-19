@@ -70,14 +70,13 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 		}
 
 		idx := tab.Index(o.Index)
-		iter := idx.Scan()
 
 		var m opt.ColMap
 		for i, id := range o.Cols {
 			m.Set(id, i)
 		}
 
-		return exec.Scan(iter), m, nil
+		return exec.Scan(idx, o.Constraint), m, nil
 	case *memo.Select:
 		in, m, err := b.build(o.Input)
 		if err != nil {
