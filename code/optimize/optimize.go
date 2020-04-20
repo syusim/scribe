@@ -174,6 +174,9 @@ func (o *optimizer) ComputeCost(e lang.Expr, reqd *phys.Props) Cost {
 	if _, ok := e.(*memo.Sort); ok {
 		cost += 100
 	}
+	if _, ok := e.(*memo.Select); ok {
+		cost += 10
+	}
 
 	cost += 1
 
