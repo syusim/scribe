@@ -208,3 +208,14 @@ func (m *Memo) internRoot(x Root) *RelGroup {
 	m.hashes[h] = p
 	return p
 }
+
+func (m *Memo) internSort(x Sort) *RelGroup {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*RelGroup)
+	}
+	p := &RelGroup{Es: []relExpr{&x}}
+	buildProps(p)
+	m.hashes[h] = p
+	return p
+}

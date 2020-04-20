@@ -43,24 +43,42 @@ plan-memo
 G1
   - Select G2 G3
   - Scan [1 2 3] @0 [1 - 1]
-  - Select G4 G3
-  - Select G5 G3
 G2
   - Scan [1 2 3] @0
-G3
-  - Filters G6
-G4
   - Scan [1 2 3] @1
-G5
   - Scan [1 2 3] @2
-G6
-  - Eq G7 G8
-G7
+G3
+  - Filters G4
+G4
+  - Eq G5 G6
+G5
   - ColRef (1)
-G8
+G6
   - Constant (1)
 
 plan-full
 (select abc (= a 1))
 ----
 -> Scan [1 2 3] @0 [1 - 1]
+
+plan
+(order-by abc [b])
+----
+-> Root (required ordering: [2]) 
+ -> Scan [1 2 3] @0
+
+plan-memo
+(order-by abc [b])
+----
+G1
+  - Root G2 (required ordering: [2]) 
+G2
+  - Scan [1 2 3] @0
+  - Scan [1 2 3] @1
+  - Scan [1 2 3] @2
+
+plan-full
+(order-by abc [b])
+----
+-> Root (required ordering: [2]) 
+ -> Scan [1 2 3] @1

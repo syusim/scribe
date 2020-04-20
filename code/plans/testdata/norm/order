@@ -1,28 +1,35 @@
 ddl
 (create-table abc
-  [[a int] [b int] [c int]])
+  [[a int] [b int] [c int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[a_idx   [a]]
+   [b_c_idx [b c]]])
 ----
 ok
 
-ddl
-(create-table xyz
-  [[x int] [y int] [z int]])
+plan-full
+(order-by abc [a])
 ----
-ok
+-> Root (required ordering: [1]) 
+ -> Scan [1 2 3] @0
 
-plan
+plan-full
 (order-by abc [b])
 ----
 -> Root (required ordering: [2]) 
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @1
 
-plan
-(order-by abc [d])
-----
-error: no col named "d"
-
-plan
+plan-full
 (order-by abc [b c])
 ----
 -> Root (required ordering: [2 3]) 
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @1
+
+plan-full
+(order-by abc [c])
+----
+-> Root (required ordering: [3]) 
+ -> Sort (ordering: [3]) 
+  -> Scan [1 2 3] @0

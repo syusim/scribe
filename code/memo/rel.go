@@ -91,6 +91,7 @@ func (s *Select) Child(i int) lang.Group {
 	}
 }
 
+// TODO: Can we kill Root and JUST have sort? Order-by introduces a sort at the top which maybe gets eliminated?
 type Root struct {
 	Input *RelGroup
 
@@ -102,6 +103,25 @@ func (r *Root) ChildCount() int {
 }
 
 func (r *Root) Child(i int) lang.Group {
+	switch i {
+	case 0:
+		return r.Input
+	default:
+		panic("out of bounds")
+	}
+}
+
+type Sort struct {
+	Input *RelGroup
+
+	Ordering opt.Ordering
+}
+
+func (r *Sort) ChildCount() int {
+	return 1
+}
+
+func (r *Sort) Child(i int) lang.Group {
 	switch i {
 	case 0:
 		return r.Input

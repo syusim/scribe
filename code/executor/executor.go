@@ -51,7 +51,7 @@ func (e *executor) Run(cmd string) (Result, error) {
 		}
 
 		explore.Explore(mem, e.catalog, rel)
-		optimize.Optimize(rel)
+		optimize.Optimize(rel, e.catalog)
 
 		// The relational representation of the plan doesn't have a notion of the
 		// ordering of columns, however, that information is encoded in the order

@@ -79,12 +79,12 @@ func TestNorm(t *testing.T) {
 				e, _, err := b.Build(expr)
 
 				explore.Explore(m, catalog, e)
-				optimize.Optimize(e)
+				g := optimize.Optimize(e, catalog, m)
 
 				if err != nil {
 					return fmt.Sprintf("error: %s\n", err)
 				}
-				return memo.Format(e)
+				return memo.Format(g)
 			default:
 				panic("unhandled")
 			}

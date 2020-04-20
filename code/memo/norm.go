@@ -98,6 +98,13 @@ func (m *Memo) Root(input *RelGroup, ordering opt.Ordering) *RelGroup {
 	})
 }
 
+func (m *Memo) Sort(input *RelGroup, ordering opt.Ordering) *RelGroup {
+	return m.internSort(Sort{
+		Input:    input,
+		Ordering: ordering,
+	})
+}
+
 func (m *Memo) Constant(d lang.Datum) scalar.Group {
 	return m.internConstant(scalar.Constant{d})
 }

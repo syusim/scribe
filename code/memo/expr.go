@@ -17,8 +17,9 @@ type RelGroup struct {
 	Props Props
 }
 
-func (r *RelGroup) Ratchet(i int) {
-	r.Es[0], r.Es[i] = r.Es[i], r.Es[0]
+// this breaks EVERYTHING!!! but i guess it's fine
+func (r *RelGroup) SetBest(e lang.Expr) {
+	r.Es[0] = e
 }
 
 func (r *RelGroup) Unwrap() relExpr {

@@ -45,24 +45,52 @@ func (e *explorer) ExploreGroup(r lang.Group) {
 			e.ExploreGroup(next.Child(i))
 		}
 
+		add := func(e lang.Expr) {
+			// TODO: I think this is broken right now if we happen to construct this
+			// expression via normalization later.
+			q = append(q, e)
+			r.(*memo.RelGroup).Add(e)
+		}
+
+		if scan, ok := next.(*memo.Scan); ok {
+			// Only generate from the canonical one.
+			if scan.Index == 0 && scan.Constraint.IsUnconstrained() {
+				tab, ok := e.c.TableByName(scan.TableName)
+				if !ok {
+					panic(fmt.Sprintf("table gone?? %s", scan.TableName))
+				}
+				// Skip the first one since we already have it.
+				for i, n := 1, tab.IndexCount(); i < n; i++ {
+					newExpr := e.m.Scan(
+						scan.TableName,
+						scan.Cols,
+						i,
+						// TODO: make this a constant somewhere
+						constraint.Constraint{},
+					).Unwrap()
+
+					add(newExpr)
+				}
+			}
+		}
+
 		if sel, ok := next.(*memo.Select); ok {
-			// TODO: We have to iterate over each member rather than unwrapping here.
-			if scan, ok := sel.Input.Unwrap().(*memo.Scan); ok {
-				// Only generate from the canonical one.
-				if scan.Index == 0 && scan.Constraint.IsUnconstrained() {
-					tab, ok := e.c.TableByName(scan.TableName)
-					if !ok {
-						panic(fmt.Sprintf("table gone?? %s", scan.TableName))
-					}
-					for i, n := 0, tab.IndexCount(); i < n; i++ {
+			for j, m := 0, sel.Input.MemberCount(); j < m; j++ {
+				if scan, ok := sel.Input.Member(j).(*memo.Scan); ok {
+					// Only generate from the canonical one.
+					if scan.Index == 0 && scan.Constraint.IsUnconstrained() {
+						tab, ok := e.c.TableByName(scan.TableName)
+						if !ok {
+							panic(fmt.Sprintf("table gone?? %s", scan.TableName))
+						}
 						newConstraints, newFilters := constraint.Generate(
 							lang.Unwrap(sel.Filter).(*scalar.Filters),
 							scan.Cols,
-							tab.Index(i),
+							tab.Index(scan.Index),
 						)
 
 						// TODO: remove this
-						if newConstraints.IsUnconstrained() && i == 0 {
+						if newConstraints.IsUnconstrained() && scan.Index == 0 {
 							continue
 						}
 
@@ -71,14 +99,13 @@ func (e *explorer) ExploreGroup(r lang.Group) {
 							e.m.Scan(
 								scan.TableName,
 								scan.Cols,
-								i,
+								scan.Index,
 								newConstraints,
 							),
 							e.m.Filters(newFilters),
 						).Unwrap()
 
-						// TODO: add to queue!
-						r.(*memo.RelGroup).Add(newExpr)
+						add(newExpr)
 					}
 				}
 			}

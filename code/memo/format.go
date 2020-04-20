@@ -113,6 +113,17 @@ func extra(buf *bytes.Buffer, e lang.Expr) {
 		}
 		buf.WriteString("] ")
 		buf.WriteString(o.PassthroughCols.String())
+	case *Sort:
+		if len(o.Ordering) > 0 {
+			buf.WriteString(" (ordering: [")
+			for i, c := range o.Ordering {
+				if i > 0 {
+					buf.WriteByte(' ')
+				}
+				fmt.Fprintf(buf, "%d", c)
+			}
+			buf.WriteString("]) ")
+		}
 	case *Root:
 		if len(o.Ordering) > 0 {
 			buf.WriteString(" (required ordering: [")

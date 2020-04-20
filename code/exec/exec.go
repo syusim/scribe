@@ -37,8 +37,7 @@ func (s *scan) Start() {}
 
 func (s *scan) Next() (lang.Row, bool) {
 	next, ok := s.iter.Next()
-	if s.constraint.End != nil {
-		cmp := opt.KeyCompare(next, s.constraint.End, s.ordering)
+	if ok && s.constraint.End != nil {
 		if cmp == lang.GT || cmp == lang.EQ && !s.constraint.InclusiveEnd {
 			return nil, false
 		}

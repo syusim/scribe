@@ -41,8 +41,10 @@ func compare(a, b lang.Row, orderBy order) cmpResult {
 	return eq
 }
 
+// TODO: swap this for opt.KeyCompare
 func compareKey(a lang.Row, key lang.Key, orderBy order) cmpResult {
-	for i, idx := range orderBy {
+	for i := range key {
+		idx := orderBy[i]
 		cmp := lang.Compare(a[idx], key[i])
 		if cmp == lang.LT {
 			return lt
