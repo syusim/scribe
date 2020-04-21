@@ -42,7 +42,7 @@ func (e *executor) Run(cmd string) (Result, error) {
 		}
 		return Result{Msg: "ok"}, nil
 	case *ast.RunQuery:
-		mem := memo.New()
+		mem := memo.New(e.catalog)
 
 		b := builder.New(e.catalog, mem)
 		rel, scope, err := b.Build(c.Input)
@@ -51,7 +51,7 @@ func (e *executor) Run(cmd string) (Result, error) {
 		}
 
 		explore.Explore(mem, e.catalog, rel)
-		optimize.Optimize(rel, e.catalog)
+		optimize.Optimize(rel, e.catalog, mem)
 
 		// The relational representation of the plan doesn't have a notion of the
 		// ordering of columns, however, that information is encoded in the order

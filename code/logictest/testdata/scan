@@ -40,11 +40,11 @@ exec
 exec
 (run (select foo (= z true)))
 ----
-[4 "four" true]
 [1 "one" true]
+[4 "four" true]
 
 exec
 (run (select foo (= z false)))
 ----
-[3 "three" false]
 [2 "two" false]
+[3 "three" false]

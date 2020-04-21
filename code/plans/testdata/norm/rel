@@ -13,13 +13,13 @@ ok
 plan
 xyz
 ----
--> Scan [1 2 3] @0
+-> Scan [1 2 3] @default
 
 plan
 (select xyz (= x 3))
 ----
 -> Select
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @default
  -> Filters
   -> Eq
    -> ColRef (1)
@@ -32,7 +32,7 @@ plan
    (+ x (+ y 0))])
 ----
 -> Project [4 5 6] []
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @default
  -> Plus
   -> ColRef (1)
   -> Plus
@@ -51,8 +51,8 @@ plan
 (join abc xyz (= a x))
 ----
 -> Join
- -> Scan [1 2 3] @0
- -> Scan [4 5 6] @0
+ -> Scan [1 2 3] @default
+ -> Scan [4 5 6] @default
  -> Filters
   -> Eq
    -> ColRef (1)
@@ -65,12 +65,12 @@ plan
 ----
 -> Join
  -> Select
-  -> Scan [1 2 3] @0
+  -> Scan [1 2 3] @default
   -> Filters
    -> Eq
     -> ColRef (2)
     -> Constant (3)
- -> Scan [4 5 6] @0
+ -> Scan [4 5 6] @default
  -> Filters
   -> Eq
    -> ColRef (1)
@@ -82,9 +82,9 @@ plan
  (= y 3))
 ----
 -> Join
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @default
  -> Select
-  -> Scan [4 5 6] @0
+  -> Scan [4 5 6] @default
   -> Filters
    -> Eq
     -> ColRef (5)
@@ -101,13 +101,13 @@ plan
 ----
 -> Join
  -> Select
-  -> Scan [1 2 3] @0
+  -> Scan [1 2 3] @default
   -> Filters
    -> Eq
     -> ColRef (3)
     -> Constant (3)
  -> Select
-  -> Scan [4 5 6] @0
+  -> Scan [4 5 6] @default
   -> Filters
    -> Eq
     -> ColRef (5)
@@ -124,13 +124,13 @@ plan
 ----
 -> Join
  -> Select
-  -> Scan [1 2 3] @0
+  -> Scan [1 2 3] @default
   -> Filters
    -> Eq
     -> ColRef (3)
     -> Constant (3)
  -> Select
-  -> Scan [4 5 6] @0
+  -> Scan [4 5 6] @default
   -> Filters
    -> Eq
     -> ColRef (5)

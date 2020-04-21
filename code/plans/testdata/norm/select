@@ -29,8 +29,8 @@ plan
 -> Select
  -> Project [] [1 2]
   -> Join
-   -> Scan [1 2 3] @0
-   -> Scan [4 5 6] @0
+   -> Scan [1 2 3] @a_idx
+   -> Scan [4 5 6] @x_idx
    -> Filters
  -> Filters
   -> Eq
@@ -38,15 +38,53 @@ plan
    -> Constant (1)
 
 plan-memo
+(select
+  (join abc xyz true)
+  (= a 1))
+----
+G1
+  - Join G2 G3 G4
+G2
+  - Select G5 G6
+  - Scan [1 2 3] @a_idx [1 - 1]
+G3
+  - Scan [4 5 6] @x_idx
+  - Scan [4 5 6] @z_y_idx
+G4
+  - Filters
+G5
+  - Scan [1 2 3] @a_idx
+  - Scan [1 2 3] @b_idx
+  - Scan [1 2 3] @c_b_idx
+G6
+  - Filters G7
+G7
+  - Eq G8 G9
+G8
+  - ColRef (1)
+G9
+  - Constant (1)
+
+plan-full
+(select
+  (join abc xyz true)
+  (= a 1))
+----
+-> Join
+ -> Scan [1 2 3] @a_idx [1 - 1]
+ -> Scan [4 5 6] @x_idx
+ -> Filters
+
+plan-memo
 (select abc (= a 1))
 ----
 G1
   - Select G2 G3
-  - Scan [1 2 3] @0 [1 - 1]
+  - Scan [1 2 3] @a_idx [1 - 1]
 G2
-  - Scan [1 2 3] @0
-  - Scan [1 2 3] @1
-  - Scan [1 2 3] @2
+  - Scan [1 2 3] @a_idx
+  - Scan [1 2 3] @b_idx
+  - Scan [1 2 3] @c_b_idx
 G3
   - Filters G4
 G4
@@ -59,26 +97,4 @@ G6
 plan-full
 (select abc (= a 1))
 ----
--> Scan [1 2 3] @0 [1 - 1]
-
-plan
-(order-by abc [b])
-----
--> Root (required ordering: [2]) 
- -> Scan [1 2 3] @0
-
-plan-memo
-(order-by abc [b])
-----
-G1
-  - Root G2 (required ordering: [2]) 
-G2
-  - Scan [1 2 3] @0
-  - Scan [1 2 3] @1
-  - Scan [1 2 3] @2
-
-plan-full
-(order-by abc [b])
-----
--> Root (required ordering: [2]) 
- -> Scan [1 2 3] @1
+-> Scan [1 2 3] @a_idx [1 - 1]

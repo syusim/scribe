@@ -142,13 +142,6 @@ func (o *optimizer) twiddle(g lang.Group, reqd *phys.Props) lang.Group {
 	}
 
 	return o.m.Render(e, newChildren)
-
-	// if rel, ok := g.(*memo.RelGroup); ok {
-	// 	rel.SetBest(res.expr)
-	// } else if g.MemberCount() > 1 {
-	// 	// Is this ever a problem?
-	// 	panic(fmt.Sprintf("don't know how to twiddle a %T", g))
-	// }
 }
 
 func (o *optimizer) OptimizeExpr(e lang.Expr, props *phys.Props) {
@@ -177,7 +170,6 @@ func (o *optimizer) ComputeCost(e lang.Expr, reqd *phys.Props) Cost {
 	if _, ok := e.(*memo.Select); ok {
 		cost += 10
 	}
-
 	cost += 1
 
 	o.exprCosts[e] = cost

@@ -51,7 +51,7 @@ func TestHash(t *testing.T) {
 }
 
 func TestIntern(t *testing.T) {
-	m := New()
+	m := New(nil)
 	j1 := m.internScan(Scan{
 		TableName: "abc",
 		Cols:      []opt.ColumnID{1, 2, 3},

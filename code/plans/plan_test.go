@@ -37,29 +37,31 @@ func TestNorm(t *testing.T) {
 				if err != nil {
 					return fmt.Sprintf("error: %s", err)
 				}
-				b := builder.New(catalog, memo.New())
+				m := memo.New(catalog)
+				b := builder.New(catalog, m)
 				e, err := b.BuildScalar(expr, nil)
 				if err != nil {
 					return fmt.Sprintf("error: %s", err)
 				}
-				return memo.Format(e)
+				return memo.Format(m, e)
 			case "plan":
 				expr, err := ast.ParseRelExpr(td.Input)
 				if err != nil {
 					return fmt.Sprintf("error: %s\n", err)
 				}
-				b := builder.New(catalog, memo.New())
+				m := memo.New(catalog)
+				b := builder.New(catalog, m)
 				e, _, err := b.Build(expr)
 				if err != nil {
 					return fmt.Sprintf("error: %s\n", err)
 				}
-				return memo.Format(e)
+				return memo.Format(m, e)
 			case "plan-memo":
 				expr, err := ast.ParseRelExpr(td.Input)
 				if err != nil {
 					return fmt.Sprintf("error: %s\n", err)
 				}
-				m := memo.New()
+				m := memo.New(catalog)
 				b := builder.New(catalog, m)
 				e, _, err := b.Build(expr)
 				if err != nil {
@@ -68,13 +70,13 @@ func TestNorm(t *testing.T) {
 
 				explore.Explore(m, catalog, e)
 
-				return memo.FormatMemo(e)
+				return m.Format(e)
 			case "plan-full":
 				expr, err := ast.ParseRelExpr(td.Input)
 				if err != nil {
 					return fmt.Sprintf("error: %s\n", err)
 				}
-				m := memo.New()
+				m := memo.New(catalog)
 				b := builder.New(catalog, m)
 				e, _, err := b.Build(expr)
 
@@ -84,7 +86,7 @@ func TestNorm(t *testing.T) {
 				if err != nil {
 					return fmt.Sprintf("error: %s\n", err)
 				}
-				return memo.Format(g)
+				return memo.Format(m, g)
 			default:
 				panic("unhandled")
 			}

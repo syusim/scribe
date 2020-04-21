@@ -10,7 +10,7 @@ import (
 )
 
 type Index struct {
-	name     string
+	Name     string
 	Ordering []opt.ColOrdinal
 	data     *index.T
 }
@@ -92,7 +92,7 @@ func (c *Catalog) AddTable(def *ast.CreateTable) error {
 
 	tab.indexes = make([]Index, len(idxs))
 	for i, idx := range idxs {
-		tab.indexes[i].name = fmt.Sprintf(idx.Name)
+		tab.indexes[i].Name = fmt.Sprintf(idx.Name)
 
 		ords := make([]opt.ColOrdinal, len(idx.Cols))
 		for j, idxCol := range idx.Cols {

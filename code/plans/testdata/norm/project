@@ -52,7 +52,7 @@ plan
   [(+ a a)]) _ [a])
 ----
 -> Project [4] []
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @default
  -> Times
   -> Constant (2)
   -> ColRef (1)
@@ -71,7 +71,7 @@ plan
   [(+ a a)]) _ [a])
 ----
 -> Project [8] []
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @default
  -> Times
   -> Constant (2)
   -> Times

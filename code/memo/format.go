@@ -10,7 +10,7 @@ import (
 )
 
 // TODO: make a real tree printer?
-func Format(g lang.Group) string {
+func Format(m *Memo, g lang.Group) string {
 	var buf bytes.Buffer
 	depth := 0
 	var p func(g lang.Group)
@@ -21,7 +21,7 @@ func Format(g lang.Group) string {
 		buf.WriteString("-> ")
 		e := lang.Unwrap(g)
 		buf.WriteString(reflect.TypeOf(e).Elem().Name())
-		extra(&buf, e)
+		m.extra(&buf, e)
 		buf.WriteByte('\n')
 		depth++
 		for i, n := 0, e.ChildCount(); i < n; i++ {
@@ -36,7 +36,7 @@ func Format(g lang.Group) string {
 }
 
 // TODO: make a real tree printer?
-func FormatMemo(g lang.Group) string {
+func (m *Memo) Format(g lang.Group) string {
 	queue := []lang.Group{g}
 
 	ids := make(map[lang.Group]int)
@@ -79,7 +79,7 @@ func FormatMemo(g lang.Group) string {
 				fmt.Fprintf(&buf, " G%d", getId(c))
 				enqueue(c)
 			}
-			extra(&buf, expr)
+			m.extra(&buf, expr)
 			buf.WriteByte('\n')
 		}
 	}
@@ -87,7 +87,7 @@ func FormatMemo(g lang.Group) string {
 	return buf.String()
 }
 
-func extra(buf *bytes.Buffer, e lang.Expr) {
+func (m *Memo) extra(buf *bytes.Buffer, e lang.Expr) {
 	switch o := e.(type) {
 	case *Scan:
 		buf.WriteString(" [")
@@ -98,7 +98,14 @@ func extra(buf *bytes.Buffer, e lang.Expr) {
 			fmt.Fprintf(buf, "%d", c)
 		}
 		buf.WriteString("] ")
-		fmt.Fprintf(buf, "@%d", o.Index)
+
+		tab, ok := m.catalog.TableByName(o.TableName)
+		if !ok {
+			panic("no table")
+		}
+		idx := tab.Index(o.Index)
+
+		fmt.Fprintf(buf, "@%s", idx.Name)
 		if o.Constraint.Start != nil || o.Constraint.End != nil {
 			buf.WriteByte(' ')
 			o.Constraint.Format(buf)

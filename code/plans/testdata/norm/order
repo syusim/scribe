@@ -13,23 +13,23 @@ plan-full
 (order-by abc [a])
 ----
 -> Root (required ordering: [1]) 
- -> Scan [1 2 3] @0
+ -> Scan [1 2 3] @a_idx
 
 plan-full
 (order-by abc [b])
 ----
 -> Root (required ordering: [2]) 
- -> Scan [1 2 3] @1
+ -> Scan [1 2 3] @b_c_idx
 
 plan-full
 (order-by abc [b c])
 ----
 -> Root (required ordering: [2 3]) 
- -> Scan [1 2 3] @1
+ -> Scan [1 2 3] @b_c_idx
 
 plan-full
 (order-by abc [c])
 ----
 -> Root (required ordering: [3]) 
  -> Sort (ordering: [3]) 
-  -> Scan [1 2 3] @0
+  -> Scan [1 2 3] @a_idx
