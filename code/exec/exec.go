@@ -229,6 +229,28 @@ func Sort(in Node, ordering []opt.ColOrdinal) Node {
 	}
 } //)
 
+type constant struct {
+	rows []lang.Row
+	idx  int
+}
+
+func (s *constant) Start() {}
+
+func (s *constant) Next() (lang.Row, bool) {
+	if s.idx >= len(s.rows) {
+		return nil, false
+	}
+
+	s.idx += 1
+	return s.rows[s.idx-1], true
+}
+
+func Constant(rows []lang.Row) Node {
+	return &constant{
+		rows: rows,
+	}
+}
+
 // TODO: does this need error handling?
 func Spool(n Node) []lang.Row {
 	n.Start()

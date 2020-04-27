@@ -1,0 +1,2 @@
+* what happens if you insert a badly-typed value into a table?
+* do we need to reserve the names "true" and "false"?

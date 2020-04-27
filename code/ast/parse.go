@@ -339,6 +339,23 @@ func parseIndexDef(s sexp.Sexp) (IndexDef, error) {
 	return IndexDef{Name: string(name), Cols: cols}, nil
 }
 
+func ParseRowList(s sexp.Sexp) ([]lang.Row, error) {
+	rowList, ok := s.(sexp.List)
+	if !ok {
+		return nil, fmt.Errorf("expected list of rows, got %s", s)
+	}
+
+	rows := make([]lang.Row, len(rowList))
+	for i, r := range rowList {
+		row, err := parseRow(r)
+		if err != nil {
+			return nil, err
+		}
+		rows[i] = row
+	}
+	return rows, nil
+}
+
 func parseStatement(s sexp.Sexp) (Statement, error) {
 	l, ok := s.(sexp.List)
 	if !ok {
@@ -387,18 +404,10 @@ func parseStatement(s sexp.Sexp) (Statement, error) {
 
 		var rows []lang.Row
 		if len(l) > 3 {
-			rowList, ok := l[3].(sexp.List)
-			if !ok {
-				return nil, fmt.Errorf("expected list of rows, got %s", l[3])
-			}
-
-			rows = make([]lang.Row, len(rowList))
-			for i, r := range rowList {
-				row, err := parseRow(r)
-				if err != nil {
-					return nil, err
-				}
-				rows[i] = row
+			var err error
+			rows, err = ParseRowList(l[3])
+			if err != nil {
+				return nil, err
 			}
 		}
 
