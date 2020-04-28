@@ -8,10 +8,10 @@ import (
 	"github.com/justinj/scribe/code/builder"
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/exec"
-	"github.com/justinj/scribe/code/execbuilder"
 	"github.com/justinj/scribe/code/explore"
 	"github.com/justinj/scribe/code/memo"
 	"github.com/justinj/scribe/code/optimize"
+	"github.com/justinj/scribe/code/render"
 )
 
 type executor struct {
@@ -57,7 +57,7 @@ func (e *executor) Run(cmd string) (Result, error) {
 		// ordering of columns, however, that information is encoded in the order
 		// of the columns stored in the final outScope.
 
-		eb := execbuilder.New(e.catalog, mem)
+		eb := render.New(e.catalog, mem)
 		plan, err := eb.Build(rel, scope.OutCols())
 		if err != nil {
 			return Result{}, err
