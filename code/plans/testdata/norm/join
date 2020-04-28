@@ -1,0 +1,43 @@
+ddl
+(create-table abc
+  [[a int] [b int] [c int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[a_idx   [a]]
+   [b_idx   [b]]
+   [c_b_idx [c b]]])
+----
+ok
+
+ddl
+(create-table xyz
+  [[x int] [y int] [z int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[x_idx   [x]]
+   [z_y_idx [z y]]])
+----
+ok
+
+plan-full
+(join abc xyz (= a x))
+----
+-> HashJoin [1=4]
+ -> Scan [1 2 3] @a_idx
+ -> Scan [4 5 6] @x_idx
+
+plan-full
+(join abc xyz (and (= a x) (= b (+ 1 x))))
+----
+-> Select
+ -> HashJoin [1=4]
+  -> Scan [1 2 3] @a_idx
+  -> Scan [4 5 6] @x_idx
+ -> Filters
+  -> Eq
+   -> ColRef (2)
+   -> Plus
+    -> Constant (1)
+    -> ColRef (4)

@@ -6,6 +6,7 @@ import (
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
+	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -68,6 +69,42 @@ func (e *explorer) generateConstrainedIndexScans(expr lang.Expr, add func(lang.E
 					add(newExpr)
 				}
 			}
+		}
+	}
+}
+
+func (e *explorer) generateHashJoins(expr lang.Expr, add func(lang.Expr)) {
+	if j, ok := expr.(*memo.Join); ok {
+		extraConds := make([]scalar.Group, 0)
+		leftCols := make([]opt.ColumnID, 0)
+		rightCols := make([]opt.ColumnID, 0)
+		for _, f := range lang.Unwrap(j.On).(*scalar.Filters).Filters {
+			added := false
+			if eq, ok := lang.Unwrap(f).(*scalar.Eq); ok {
+				if l, ok := lang.Unwrap(eq.Left).(*scalar.ColRef); ok {
+					if r, ok := lang.Unwrap(eq.Right).(*scalar.ColRef); ok {
+						// TODO: check that they straddle the two?
+						leftCols = append(leftCols, l.Id)
+						rightCols = append(rightCols, r.Id)
+						added = true
+					}
+				}
+			}
+			if !added {
+				extraConds = append(extraConds, f)
+			}
+		}
+		// TODO: add the commuted version too for the ordering
+		if len(leftCols) > 0 {
+			add(e.m.Select(
+				e.m.HashJoin(
+					j.Left,
+					j.Right,
+					leftCols,
+					rightCols,
+				),
+				e.m.Filters(extraConds),
+			).Unwrap())
 		}
 	}
 }

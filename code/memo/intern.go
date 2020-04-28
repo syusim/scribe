@@ -198,6 +198,17 @@ func (m *Memo) internJoin(x Join) *RelGroup {
 	return p
 }
 
+func (m *Memo) internHashJoin(x HashJoin) *RelGroup {
+	h := hash(x)
+	if v, ok := m.hashes[h]; ok {
+		return v.(*RelGroup)
+	}
+	p := &RelGroup{Es: []relExpr{&x}}
+	buildProps(p)
+	m.hashes[h] = p
+	return p
+}
+
 func (m *Memo) internRoot(x Root) *RelGroup {
 	h := hash(x)
 	if v, ok := m.hashes[h]; ok {

@@ -50,5 +50,6 @@ func (e *explorer) ExploreGroup(r lang.Group) {
 
 		e.generateIndexScans(next, add)
 		e.generateConstrainedIndexScans(next, add)
+		e.generateHashJoins(next, add)
 	}
 }

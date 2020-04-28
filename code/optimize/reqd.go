@@ -20,6 +20,10 @@ func (o *optimizer) CanProvide(e lang.Expr, p *phys.Props) bool {
 	case *memo.Project:
 		// Can provide it by requiring it of the input.
 		return true
+	case *memo.HashJoin:
+		// TODO: we can provide the right's ordering!
+		// Can't provide anything!
+		return len(p.Ordering) == 0
 	case *memo.Join:
 		// Can't provide anything!
 		return len(p.Ordering) == 0
@@ -61,6 +65,8 @@ func (o *optimizer) ReqdPhys(e lang.Expr, p *phys.Props, i int) *phys.Props {
 
 		return inputProps
 	case *memo.Join:
+		return o.internPhys(phys.Min)
+	case *memo.HashJoin:
 		return o.internPhys(phys.Min)
 	case *memo.Sort:
 		return o.internPhys(phys.Min)

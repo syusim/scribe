@@ -49,6 +49,28 @@ func (j *Join) Child(i int) lang.Group {
 	}
 }
 
+type HashJoin struct {
+	Left      *RelGroup
+	Right     *RelGroup
+	LeftCols  []opt.ColumnID
+	RightCols []opt.ColumnID
+}
+
+func (j *HashJoin) ChildCount() int {
+	return 2
+}
+
+func (j *HashJoin) Child(i int) lang.Group {
+	switch i {
+	case 0:
+		return j.Left
+	case 1:
+		return j.Right
+	default:
+		panic("out of bounds")
+	}
+}
+
 type Project struct {
 	Input *RelGroup
 

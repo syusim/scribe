@@ -292,7 +292,7 @@ func (m *merge) Next() (lang.Row, bool) {
 	return next, true
 }
 
-func hashRow(r lang.Row, key []int) string {
+func hashRow(r lang.Row, key []opt.ColOrdinal) string {
 	var buf bytes.Buffer
 	for i, idx := range key {
 		if i > 0 {
@@ -307,14 +307,14 @@ type hash struct {
 	l Node
 	r Node
 
-	leftIdxs  []int
-	rightIdxs []int
+	leftIdxs  []opt.ColOrdinal
+	rightIdxs []opt.ColOrdinal
 	queue     []lang.Row
 
 	table map[string][]lang.Row
 }
 
-func Hash(l, r Node, leftIdxs, rightIdxs []int) Node {
+func Hash(l, r Node, leftIdxs, rightIdxs []opt.ColOrdinal) Node {
 	return &hash{
 		l:         l,
 		r:         r,

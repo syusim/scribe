@@ -17,11 +17,6 @@ type RelGroup struct {
 	Props Props
 }
 
-// this breaks EVERYTHING!!! but i guess it's fine
-func (r *RelGroup) SetBest(e lang.Expr) {
-	r.Es[0] = e
-}
-
 func (r *RelGroup) Unwrap() relExpr {
 	return r.Es[0]
 }

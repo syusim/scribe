@@ -110,6 +110,15 @@ func (m *Memo) extra(buf *bytes.Buffer, e lang.Expr) {
 			buf.WriteByte(' ')
 			o.Constraint.Format(buf)
 		}
+	case *HashJoin:
+		buf.WriteString(" [")
+		for i := range o.LeftCols {
+			if i > 0 {
+				buf.WriteByte(' ')
+			}
+			fmt.Fprintf(buf, "%d=%d", o.LeftCols[i], o.RightCols[i])
+		}
+		buf.WriteString("]")
 	case *Project:
 		buf.WriteString(" [")
 		for i, c := range o.ColIDs {

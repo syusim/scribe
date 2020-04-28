@@ -1,0 +1,29 @@
+exec
+(create-table abc
+  [[a int] [b int] [c int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[a_idx   [a]]
+   [b_idx   [b]]
+   [c_b_idx [c b]]])
+----
+ok
+
+exec
+(create-table xyz
+  [[x int] [y int] [z int]]
+  [[1 2 3]
+   [4 5 6]
+   [7 8 9]]
+  [[x_idx   [x]]
+   [z_y_idx [z y]]])
+----
+ok
+
+exec
+(run (join abc xyz (= a x)))
+----
+[1 2 3 1 2 3]
+[4 5 6 4 5 6]
+[7 8 9 7 8 9]

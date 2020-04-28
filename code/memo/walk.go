@@ -19,6 +19,8 @@ func (m *Memo) Render(e lang.Expr, args []lang.Group) lang.Group {
 		res = &Select{args[0].(*RelGroup), args[1].(scalar.Group)}
 	case *Join:
 		res = &Join{args[0].(*RelGroup), args[1].(*RelGroup), args[2].(scalar.Group)}
+	case *HashJoin:
+		res = &HashJoin{args[0].(*RelGroup), args[1].(*RelGroup), e.LeftCols, e.RightCols}
 	case *Project:
 		projs := make([]scalar.Group, len(args)-1)
 		for i := range projs {

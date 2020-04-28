@@ -95,6 +95,39 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 
 		return exec.Select(in, pred), m, nil
 
+	case *memo.HashJoin:
+		left, leftMap, err := b.build(o.Left)
+		if err != nil {
+			return nil, opt.ColMap{}, err
+		}
+
+		right, rightMap, err := b.build(o.Right)
+		if err != nil {
+			return nil, opt.ColMap{}, err
+		}
+
+		// TODO: is there a neater way to do this?
+		// We're just combining them.
+		var m opt.ColMap
+		leftMap.ForEach(func(from opt.ColumnID, to int) {
+			m.Set(from, to)
+		})
+		rightMap.ForEach(func(from opt.ColumnID, to int) {
+			m.Set(from, to+leftMap.Len())
+		})
+
+		leftIdxs := make([]opt.ColOrdinal, len(o.LeftCols))
+		for i := range leftIdxs {
+			idx, _ := leftMap.Get(o.LeftCols[i])
+			leftIdxs[i] = opt.ColOrdinal(idx)
+		}
+		rightIdxs := make([]opt.ColOrdinal, len(o.RightCols))
+		for i := range rightIdxs {
+			idx, _ := rightMap.Get(o.RightCols[i])
+			rightIdxs[i] = opt.ColOrdinal(idx)
+		}
+
+		return exec.Hash(left, right, leftIdxs, rightIdxs), m, nil
 	case *memo.Join:
 		left, leftMap, err := b.build(o.Left)
 		if err != nil {

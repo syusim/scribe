@@ -101,8 +101,8 @@ func TestExec(t *testing.T) {
 				args := parseArgs(td.Input)
 				var left Node
 				var right Node
-				var leftIdxs []int
-				var rightIdxs []int
+				var leftIdxs []opt.ColOrdinal
+				var rightIdxs []opt.ColOrdinal
 				for _, a := range args {
 					switch a.key {
 					case "left":

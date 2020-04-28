@@ -22,10 +22,10 @@ exec
 exec
 (run (order-by foo [y]))
 ----
-[1 "one" true]
-[2 "two" false]
-[3 "three" false]
 [4 "four" true]
+[1 "one" true]
+[3 "three" false]
+[2 "two" false]
 
 exec
 (run (select foo (= x 1)))

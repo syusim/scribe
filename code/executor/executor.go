@@ -51,14 +51,14 @@ func (e *executor) Run(cmd string) (Result, error) {
 		}
 
 		explore.Explore(mem, e.catalog, rel)
-		optimize.Optimize(rel, e.catalog, mem)
+		g := optimize.Optimize(rel, e.catalog, mem).(*memo.RelGroup)
 
 		// The relational representation of the plan doesn't have a notion of the
 		// ordering of columns, however, that information is encoded in the order
 		// of the columns stored in the final outScope.
 
 		eb := render.New(e.catalog, mem)
-		plan, err := eb.Build(rel, scope.OutCols())
+		plan, err := eb.Build(g, scope.OutCols())
 		if err != nil {
 			return Result{}, err
 		}

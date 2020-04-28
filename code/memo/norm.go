@@ -42,6 +42,15 @@ func (m *Memo) Join(left, right *RelGroup, on scalar.Group) *RelGroup {
 	})
 }
 
+func (m *Memo) HashJoin(left, right *RelGroup, leftCols, rightCols []opt.ColumnID) *RelGroup {
+	return m.internHashJoin(HashJoin{
+		Left:      left,
+		Right:     right,
+		LeftCols:  leftCols,
+		RightCols: rightCols,
+	})
+}
+
 // TODO: standardize on xxxIDs vs. xxxIds
 func (m *Memo) Project(
 	input *RelGroup,
