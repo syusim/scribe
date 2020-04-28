@@ -1,3 +1,7 @@
+load name=empty
+[]
+----
+
 load name=left
 [[1 "one"]
  [2 "two"]
@@ -10,7 +14,7 @@ load name=right
  [3 "two"]]
 ----
 
-hash
+merge
 left=left
 right=right
 eq=[[0 0]]
@@ -19,12 +23,24 @@ eq=[[0 0]]
 [3 "two" 3 "two"]
 [3 "two" 3 "two"]
 
-hash
+merge
+left=empty
+right=right
+eq=[[0 0]]
+----
+
+merge
+left=left
+right=empty
+eq=[[0 0]]
+----
+
+merge
 left=left
 right=right
 eq=[[1 1]]
 ----
 [2 "two" 3 "two"]
-[3 "two" 3 "two"]
 [2 "two" 3 "two"]
+[3 "two" 3 "two"]
 [3 "two" 3 "two"]

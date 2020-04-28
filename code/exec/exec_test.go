@@ -9,6 +9,7 @@ import (
 	"github.com/justinj/bitwise/datadriven"
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/lang"
+	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/sexp"
 )
 
@@ -46,7 +47,9 @@ func printResult(node Node) string {
 			buf.WriteByte('\n')
 		}
 	}
-	buf.WriteByte('\n')
+	if buf.Len() > 0 {
+		buf.WriteByte('\n')
+	}
 	return buf.String()
 }
 
@@ -120,6 +123,33 @@ func TestExec(t *testing.T) {
 				}
 
 				return printResult(Hash(left, right, leftIdxs, rightIdxs))
+
+			case "merge":
+				args := parseArgs(td.Input)
+				var left Node
+				var right Node
+				var leftIdxs []opt.ColOrdinal
+				var rightIdxs []opt.ColOrdinal
+				for _, a := range args {
+					switch a.key {
+					case "left":
+						left = Constant(rowSets[a.val])
+					case "right":
+						right = Constant(rowSets[a.val])
+					case "eq":
+						s, err := sexp.Parse(a.val)
+						if err != nil {
+							t.Fatal(err)
+						}
+						ls := s.(sexp.List)
+						for _, pair := range ls {
+							leftIdxs = append(leftIdxs, opt.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
+							rightIdxs = append(rightIdxs, opt.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
+						}
+					}
+				}
+
+				return printResult(Merge(left, right, leftIdxs, rightIdxs))
 
 			default:
 				panic(fmt.Sprintf("unhandled: %q", td.Cmd))

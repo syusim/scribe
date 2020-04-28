@@ -203,6 +203,93 @@ func appendRows(l, r lang.Row) lang.Row {
 	return result
 }
 
+type merge struct {
+	l         Node
+	r         Node
+	leftIdxs  []opt.ColOrdinal
+	rightIdxs []opt.ColOrdinal
+
+	lr    lang.Row
+	rr    lang.Row
+	queue []lang.Row
+}
+
+func Merge(l, r Node, leftIdxs, rightIdxs []opt.ColOrdinal) Node {
+	return &merge{
+		l:         l,
+		r:         r,
+		leftIdxs:  leftIdxs,
+		rightIdxs: rightIdxs,
+	}
+}
+
+func (m *merge) Start() {
+	m.l.Start()
+	m.r.Start()
+}
+
+func (m *merge) left() lang.Row {
+	if m.lr == nil {
+		m.lr, _ = m.l.Next()
+	}
+	return m.lr
+}
+
+func (m *merge) popLeft() lang.Row {
+	r := m.left()
+	m.lr = nil
+	return r
+}
+
+func (m *merge) right() lang.Row {
+	if m.rr == nil {
+		m.rr, _ = m.r.Next()
+	}
+	return m.rr
+}
+
+func (m *merge) popRight() lang.Row {
+	r := m.right()
+	m.rr = nil
+	return r
+}
+
+func (m *merge) Next() (lang.Row, bool) {
+	for len(m.queue) == 0 {
+		if m.left() == nil || m.right() == nil {
+			return nil, false
+		}
+
+		cmp := opt.RowCompare2(m.left(), m.right(), m.leftIdxs, m.rightIdxs)
+		switch cmp {
+		case lang.LT:
+			m.lr = nil
+		case lang.GT:
+			m.rr = nil
+		case lang.EQ:
+			leftRows := []lang.Row{m.popLeft()}
+			for m.left() != nil && opt.RowCompare(leftRows[0], m.left(), m.leftIdxs) == lang.EQ {
+				leftRows = append(leftRows, m.popLeft())
+			}
+
+			rightRows := []lang.Row{m.popRight()}
+			for m.right() != nil && opt.RowCompare(rightRows[0], m.right(), m.rightIdxs) == lang.EQ {
+				rightRows = append(rightRows, m.popRight())
+			}
+
+			for _, l := range leftRows {
+				for _, r := range rightRows {
+					m.queue = append(m.queue, appendRows(l, r))
+				}
+			}
+		}
+	}
+
+	var next lang.Row
+	next, m.queue = m.queue[0], m.queue[1:]
+	return next, true
+}
+
 func hashRow(r lang.Row, key []int) string {
 	var buf bytes.Buffer
 	for i, idx := range key {

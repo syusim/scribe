@@ -27,6 +27,16 @@ func RowCompare(a, b lang.Row, ord []ColOrdinal) lang.CmpResult {
 	return lang.EQ
 }
 
+func RowCompare2(a, b lang.Row, aOrd, bOrd []ColOrdinal) lang.CmpResult {
+	for i := range aOrd {
+		cmp := lang.Compare(a[aOrd[i]], b[bOrd[i]])
+		if cmp != lang.EQ {
+			return cmp
+		}
+	}
+	return lang.EQ
+}
+
 func KeyCompare(a lang.Row, b lang.Key, ord []ColOrdinal) lang.CmpResult {
 	for i, idx := range ord {
 		if i >= len(b) {
