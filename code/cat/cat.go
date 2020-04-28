@@ -6,12 +6,11 @@ import (
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 )
 
 type Index struct {
 	Name     string
-	Ordering []opt.ColOrdinal
+	Ordering []lang.ColOrdinal
 	data     *index.T
 }
 
@@ -86,7 +85,7 @@ func (c *Catalog) AddTable(def *ast.CreateTable) error {
 	for i, idx := range idxs {
 		tab.indexes[i].Name = fmt.Sprintf(idx.Name)
 
-		ords := make([]opt.ColOrdinal, len(idx.Cols))
+		ords := make([]lang.ColOrdinal, len(idx.Cols))
 		for j, idxCol := range idx.Cols {
 			nextOrd := -1
 
@@ -102,7 +101,7 @@ func (c *Catalog) AddTable(def *ast.CreateTable) error {
 				return fmt.Errorf("invalid index column %q", idxCol)
 			}
 
-			ords[j] = opt.ColOrdinal(nextOrd)
+			ords[j] = lang.ColOrdinal(nextOrd)
 		}
 
 		tab.indexes[i].Ordering = ords

@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/lang"
 )
 
 var Min = Props{}
 
 type Props struct {
-	Ordering opt.Ordering
+	Ordering lang.Ordering
 }
 
 func Hash(p Props) string {

@@ -2,7 +2,6 @@ package memo
 
 import (
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -43,7 +42,7 @@ func unfoldFilters(f []scalar.Group) []scalar.Group {
 func extractBoundUnbound(
 	m *Memo,
 	filters []scalar.Group,
-	cols opt.ColSet,
+	cols lang.ColSet,
 ) ([]scalar.Group, []scalar.Group) {
 	canPush := false
 	for _, f := range filters {
@@ -75,7 +74,7 @@ func inlineIn(
 	m *Memo,
 	e scalar.Group,
 	projs []scalar.Group,
-	ids []opt.ColumnID,
+	ids []lang.ColumnID,
 ) scalar.Group {
 	return m.Walk(e, func(in lang.Group) lang.Group {
 		if ref, ok := in.(*scalar.ColRef); ok {

@@ -1,5 +1,5 @@
 (ColRef
-  [Id opt.ColumnID]
+  [Id lang.ColumnID]
   [Typ lang.Type])
 
 (ExecColRef

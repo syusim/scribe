@@ -6,7 +6,6 @@ import (
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -76,8 +75,8 @@ func (e *explorer) generateConstrainedIndexScans(expr lang.Expr, add func(lang.E
 func (e *explorer) generateHashJoins(expr lang.Expr, add func(lang.Expr)) {
 	if j, ok := expr.(*memo.Join); ok {
 		extraConds := make([]scalar.Group, 0)
-		leftCols := make([]opt.ColumnID, 0)
-		rightCols := make([]opt.ColumnID, 0)
+		leftCols := make([]lang.ColumnID, 0)
+		rightCols := make([]lang.ColumnID, 0)
 		for _, f := range lang.Unwrap(j.On).(*scalar.Filters).Filters {
 			added := false
 			if eq, ok := lang.Unwrap(f).(*scalar.Eq); ok {

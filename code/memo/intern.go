@@ -7,7 +7,6 @@ import (
 
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -23,20 +22,20 @@ func hashField(buf *bytes.Buffer, f interface{}) {
 		fmt.Fprintf(buf, "%p", e)
 	case constraint.Constraint:
 		e.Format(buf)
-	case opt.ColumnID:
+	case lang.ColumnID:
 		fmt.Fprintf(buf, "%d", e)
-	case opt.ColSet:
+	case lang.ColSet:
 		// TODO: need to make a real thing here, but this is safe
 		// because Go guarantees order in stringified form.
 		fmt.Fprintf(buf, "%s", e.String())
-	case opt.Ordering:
+	case lang.Ordering:
 		for i, c := range e {
 			if i > 0 {
 				buf.WriteByte(',')
 			}
 			fmt.Fprintf(buf, "%d", c)
 		}
-	case []opt.ColumnID:
+	case []lang.ColumnID:
 		for i, c := range e {
 			if i > 0 {
 				buf.WriteByte(',')

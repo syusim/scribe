@@ -7,7 +7,6 @@ import (
 	"github.com/justinj/scribe/code/exec"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -23,7 +22,7 @@ func New(cat *cat.Catalog, memo *memo.Memo) *builder {
 	}
 }
 
-func (b *builder) buildScalar(e scalar.Group, m opt.ColMap) (exec.ScalarExpr, error) {
+func (b *builder) buildScalar(e scalar.Group, m lang.ColMap) (exec.ScalarExpr, error) {
 	return exec.ScalarExpr(b.memo.Walk(e, func(in lang.Group) lang.Group {
 		if ref, ok := in.(*scalar.ColRef); ok {
 			idx, _ := m.Get(ref.Id)
@@ -36,7 +35,7 @@ func (b *builder) buildScalar(e scalar.Group, m opt.ColMap) (exec.ScalarExpr, er
 	}).(scalar.Group)), nil
 }
 
-func (b *builder) Build(e *memo.RelGroup, outCols []opt.ColumnID) (exec.Node, error) {
+func (b *builder) Build(e *memo.RelGroup, outCols []lang.ColumnID) (exec.Node, error) {
 	n, m, err := b.build(e)
 	if err != nil {
 		return nil, err
@@ -55,7 +54,7 @@ func (b *builder) Build(e *memo.RelGroup, outCols []opt.ColumnID) (exec.Node, er
 	return exec.Project(n, out), nil
 }
 
-func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
+func (b *builder) build(e *memo.RelGroup) (exec.Node, lang.ColMap, error) {
 	switch o := e.Unwrap().(type) {
 	case *memo.Scan:
 		tab, ok := b.cat.TableByName(o.TableName)
@@ -71,7 +70,7 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 
 		idx := tab.Index(o.Index)
 
-		var m opt.ColMap
+		var m lang.ColMap
 		for i, id := range o.Cols {
 			m.Set(id, i)
 		}
@@ -80,7 +79,7 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 	case *memo.Select:
 		in, m, err := b.build(o.Input)
 		if err != nil {
-			return nil, opt.ColMap{}, err
+			return nil, lang.ColMap{}, err
 		}
 
 		// TODO: one unified scalar repr 2020
@@ -88,7 +87,7 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 		for _, p := range o.Filter.(*scalar.Filters).Filters {
 			next, err := b.buildScalar(p, m)
 			if err != nil {
-				return nil, opt.ColMap{}, err
+				return nil, lang.ColMap{}, err
 			}
 			pred = &scalar.And{pred, next}
 		}
@@ -98,54 +97,54 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 	case *memo.HashJoin:
 		left, leftMap, err := b.build(o.Left)
 		if err != nil {
-			return nil, opt.ColMap{}, err
+			return nil, lang.ColMap{}, err
 		}
 
 		right, rightMap, err := b.build(o.Right)
 		if err != nil {
-			return nil, opt.ColMap{}, err
+			return nil, lang.ColMap{}, err
 		}
 
 		// TODO: is there a neater way to do this?
 		// We're just combining them.
-		var m opt.ColMap
-		leftMap.ForEach(func(from opt.ColumnID, to int) {
+		var m lang.ColMap
+		leftMap.ForEach(func(from lang.ColumnID, to int) {
 			m.Set(from, to)
 		})
-		rightMap.ForEach(func(from opt.ColumnID, to int) {
+		rightMap.ForEach(func(from lang.ColumnID, to int) {
 			m.Set(from, to+leftMap.Len())
 		})
 
-		leftIdxs := make([]opt.ColOrdinal, len(o.LeftCols))
+		leftIdxs := make([]lang.ColOrdinal, len(o.LeftCols))
 		for i := range leftIdxs {
 			idx, _ := leftMap.Get(o.LeftCols[i])
-			leftIdxs[i] = opt.ColOrdinal(idx)
+			leftIdxs[i] = lang.ColOrdinal(idx)
 		}
-		rightIdxs := make([]opt.ColOrdinal, len(o.RightCols))
+		rightIdxs := make([]lang.ColOrdinal, len(o.RightCols))
 		for i := range rightIdxs {
 			idx, _ := rightMap.Get(o.RightCols[i])
-			rightIdxs[i] = opt.ColOrdinal(idx)
+			rightIdxs[i] = lang.ColOrdinal(idx)
 		}
 
 		return exec.Hash(left, right, leftIdxs, rightIdxs), m, nil
 	case *memo.Join:
 		left, leftMap, err := b.build(o.Left)
 		if err != nil {
-			return nil, opt.ColMap{}, err
+			return nil, lang.ColMap{}, err
 		}
 
 		right, rightMap, err := b.build(o.Right)
 		if err != nil {
-			return nil, opt.ColMap{}, err
+			return nil, lang.ColMap{}, err
 		}
 
 		// TODO: is there a neater way to do this?
 		// We're just combining them.
-		var m opt.ColMap
-		leftMap.ForEach(func(from opt.ColumnID, to int) {
+		var m lang.ColMap
+		leftMap.ForEach(func(from lang.ColumnID, to int) {
 			m.Set(from, to)
 		})
-		rightMap.ForEach(func(from opt.ColumnID, to int) {
+		rightMap.ForEach(func(from lang.ColumnID, to int) {
 			m.Set(from, to+leftMap.Len())
 		})
 
@@ -153,7 +152,7 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 		for _, p := range o.On.(*scalar.Filters).Filters {
 			next, err := b.buildScalar(p, m)
 			if err != nil {
-				return nil, opt.ColMap{}, err
+				return nil, lang.ColMap{}, err
 			}
 			pred = &scalar.And{pred, next}
 		}
@@ -166,22 +165,22 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, opt.ColMap, error) {
 	case *memo.Project:
 		in, m, err := b.build(o.Input)
 		if err != nil {
-			return nil, opt.ColMap{}, err
+			return nil, lang.ColMap{}, err
 		}
 
-		outMap := opt.ColMap{}
+		outMap := lang.ColMap{}
 
 		exprs := make([]exec.ScalarExpr, 0, len(o.Projections))
 		for i := range o.Projections {
 			p, err := b.buildScalar(o.Projections[i], m)
 			if err != nil {
-				return nil, opt.ColMap{}, err
+				return nil, lang.ColMap{}, err
 			}
 			exprs = append(exprs, p)
 			outMap.Set(o.ColIDs[i], i)
 		}
 
-		o.PassthroughCols.ForEach(func(c opt.ColumnID) {
+		o.PassthroughCols.ForEach(func(c lang.ColumnID) {
 			idx, _ := m.Get(c)
 			// Just synthesize a col ref.
 			exprs = append(exprs, &scalar.ExecColRef{

@@ -8,13 +8,12 @@ import (
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
 type colInfo struct {
 	name string
-	id   opt.ColumnID
+	id   lang.ColumnID
 	typ  lang.Type
 }
 
@@ -28,8 +27,8 @@ type builder struct {
 	memo *memo.Memo
 }
 
-func (b *builder) addCol(name string, typ lang.Type) opt.ColumnID {
-	id := opt.ColumnID(len(b.cols) + 1)
+func (b *builder) addCol(name string, typ lang.Type) lang.ColumnID {
+	id := lang.ColumnID(len(b.cols) + 1)
 	b.cols = append(b.cols, colInfo{
 		name: name,
 		id:   id,
@@ -54,7 +53,7 @@ func (b *builder) Build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 			return nil, nil, err
 		}
 
-		var ord opt.Ordering
+		var ord lang.Ordering
 		for _, col := range o.ColNames {
 			c, _, ok := s.resolve(col)
 			if !ok {
@@ -77,7 +76,7 @@ func (b *builder) build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 			return nil, nil, fmt.Errorf("no table named %q", a.Name)
 		}
 
-		cols := make([]opt.ColumnID, tab.ColumnCount())
+		cols := make([]lang.ColumnID, tab.ColumnCount())
 		s := newScope()
 		for i, n := 0, tab.ColumnCount(); i < n; i++ {
 			col := tab.Column(i)
@@ -125,10 +124,10 @@ func (b *builder) build(e ast.RelExpr) (*memo.RelGroup, *scope, error) {
 		}
 
 		exprs := make([]scalar.Group, 0, len(a.Exprs))
-		outCols := make([]opt.ColumnID, 0, len(exprs))
+		outCols := make([]lang.ColumnID, 0, len(exprs))
 
 		outScope := newScope()
-		var passthrough opt.ColSet
+		var passthrough lang.ColSet
 
 		for i, e := range a.Exprs {
 			proj, err := b.BuildScalar(e, inScope)

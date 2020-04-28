@@ -5,7 +5,6 @@ import (
 
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/memo"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/phys"
 	"github.com/justinj/scribe/code/scalar"
 )
@@ -44,7 +43,7 @@ func (o *optimizer) CanProvide(e lang.Expr, p *phys.Props) bool {
 					break
 				}
 			}
-			if i >= len(idx.Ordering) || idx.Ordering[i] != opt.ColOrdinal(ord) {
+			if i >= len(idx.Ordering) || idx.Ordering[i] != lang.ColOrdinal(ord) {
 				return false
 			}
 		}

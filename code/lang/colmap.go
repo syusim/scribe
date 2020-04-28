@@ -1,4 +1,4 @@
-package opt
+package lang
 
 // TODO: optimize this!
 type ColMap struct {

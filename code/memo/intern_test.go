@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -16,7 +15,7 @@ func TestHash(t *testing.T) {
 		{
 			Scan{
 				TableName: "abc",
-				Cols:      []opt.ColumnID{1, 2, 3},
+				Cols:      []lang.ColumnID{1, 2, 3},
 			},
 			"Scan/abc/1,2,3/0/( - )",
 		}, {
@@ -54,12 +53,12 @@ func TestIntern(t *testing.T) {
 	m := New(nil)
 	j1 := m.internScan(Scan{
 		TableName: "abc",
-		Cols:      []opt.ColumnID{1, 2, 3},
+		Cols:      []lang.ColumnID{1, 2, 3},
 	})
 
 	j2 := m.internScan(Scan{
 		TableName: "abc",
-		Cols:      []opt.ColumnID{1, 2, 3},
+		Cols:      []lang.ColumnID{1, 2, 3},
 	})
 
 	if j1 != j2 {

@@ -1,13 +1,13 @@
 package memo
 
 import (
-	"github.com/justinj/scribe/code/opt"
+	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/scalar"
 )
 
 // TODO: pull this into a pkg/file
 type Props struct {
-	OutputCols opt.ColSet
+	OutputCols lang.ColSet
 }
 
 func buildProps(r *RelGroup) {
@@ -24,16 +24,16 @@ func buildProps(r *RelGroup) {
 		}
 		r.Props.OutputCols.UnionWith(e.PassthroughCols)
 	case *Join:
-		e.Left.Props.OutputCols.ForEach(func(c opt.ColumnID) {
+		e.Left.Props.OutputCols.ForEach(func(c lang.ColumnID) {
 			r.Props.OutputCols.Add(c)
 		})
-		e.Right.Props.OutputCols.ForEach(func(c opt.ColumnID) {
+		e.Right.Props.OutputCols.ForEach(func(c lang.ColumnID) {
 			r.Props.OutputCols.Add(c)
 		})
 	}
 }
 
-func computeFreeCols(o opt.ColSet, s scalar.Group) {
+func computeFreeCols(o lang.ColSet, s scalar.Group) {
 	if c, ok := s.(*scalar.ColRef); ok {
 		o.Add(c.Id)
 	} else {

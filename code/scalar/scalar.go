@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 )
 
 type Group interface {
@@ -20,7 +19,7 @@ type Group interface {
 // }
 
 type ColRef struct {
-	Id opt.ColumnID
+	Id lang.ColumnID
 
 	// We need to store this in here because the alternative is
 	// passing in a context when we ask for the type and I find that

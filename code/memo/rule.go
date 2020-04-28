@@ -2,7 +2,6 @@ package memo
 
 import (
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -177,7 +176,7 @@ func EliminateSelect(m *Memo, args []interface{}) lang.Group {
 // Project Rules.
 
 func EliminateProject(m *Memo, args []interface{}) lang.Group {
-	input, _, projections, passthrough := args[0].(*RelGroup), args[1].([]opt.ColumnID), args[2].([]scalar.Group), args[3].(opt.ColSet)
+	input, _, projections, passthrough := args[0].(*RelGroup), args[1].([]lang.ColumnID), args[2].([]scalar.Group), args[3].(lang.ColSet)
 
 	if len(projections) > 0 {
 		return nil
@@ -191,7 +190,7 @@ func EliminateProject(m *Memo, args []interface{}) lang.Group {
 }
 
 func MergeProjectProject(m *Memo, args []interface{}) lang.Group {
-	input, colIDs, projections, passthrough := args[0].(*RelGroup), args[1].([]opt.ColumnID), args[2].([]scalar.Group), args[3].(opt.ColSet)
+	input, colIDs, projections, passthrough := args[0].(*RelGroup), args[1].([]lang.ColumnID), args[2].([]scalar.Group), args[3].(lang.ColSet)
 
 	if p, ok := input.Unwrap().(*Project); ok {
 		// passthrough is the same as before, except we need to get
@@ -215,7 +214,7 @@ func MergeProjectProject(m *Memo, args []interface{}) lang.Group {
 			newProjections[i] = inlineIn(m, projections[i], p.Projections, p.ColIDs)
 		}
 
-		newColIDs := make([]opt.ColumnID, len(colIDs), len(colIDs)+len(toInclude))
+		newColIDs := make([]lang.ColumnID, len(colIDs), len(colIDs)+len(toInclude))
 		copy(newColIDs, colIDs)
 		for _, idx := range toInclude {
 			newProjections = append(newProjections, p.Projections[idx])

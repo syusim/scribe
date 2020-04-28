@@ -5,7 +5,6 @@ import (
 
 	"github.com/justinj/scribe/code/cat"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -43,7 +42,7 @@ func (c Constraint) IsUnconstrained() bool {
 
 func Generate(
 	filters *scalar.Filters,
-	colIdxs []opt.ColumnID,
+	colIdxs []lang.ColumnID,
 	index *cat.Index,
 ) (c Constraint, remaining []scalar.Group) {
 	// super baby mode. only handle an eq on the first col.
@@ -73,7 +72,7 @@ func Generate(
 					return Constraint{}, filters.Filters
 				}
 
-				if index.Ordering[0] == opt.ColOrdinal(ord) {
+				if index.Ordering[0] == lang.ColOrdinal(ord) {
 					// Now we're COOKIN!
 					return Constraint{
 						InclusiveStart: true,

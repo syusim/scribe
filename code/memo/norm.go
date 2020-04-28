@@ -3,11 +3,10 @@ package memo
 import (
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
-func (m *Memo) Scan(tableName string, cols []opt.ColumnID, indexId int, constraint constraint.Constraint) *RelGroup {
+func (m *Memo) Scan(tableName string, cols []lang.ColumnID, indexId int, constraint constraint.Constraint) *RelGroup {
 	return m.internScan(Scan{
 		TableName:  tableName,
 		Cols:       cols,
@@ -42,7 +41,7 @@ func (m *Memo) Join(left, right *RelGroup, on scalar.Group) *RelGroup {
 	})
 }
 
-func (m *Memo) HashJoin(left, right *RelGroup, leftCols, rightCols []opt.ColumnID) *RelGroup {
+func (m *Memo) HashJoin(left, right *RelGroup, leftCols, rightCols []lang.ColumnID) *RelGroup {
 	return m.internHashJoin(HashJoin{
 		Left:      left,
 		Right:     right,
@@ -54,9 +53,9 @@ func (m *Memo) HashJoin(left, right *RelGroup, leftCols, rightCols []opt.ColumnI
 // TODO: standardize on xxxIDs vs. xxxIds
 func (m *Memo) Project(
 	input *RelGroup,
-	colIDs []opt.ColumnID,
+	colIDs []lang.ColumnID,
 	projections []scalar.Group,
-	passthrough opt.ColSet,
+	passthrough lang.ColSet,
 ) *RelGroup {
 	if e := m.matchRules([]interface{}{input, colIDs, projections, passthrough}, []rule{
 		EliminateProject,
@@ -100,14 +99,14 @@ func (m *Memo) Select(input *RelGroup, filter scalar.Group) *RelGroup {
 	})
 }
 
-func (m *Memo) Root(input *RelGroup, ordering opt.Ordering) *RelGroup {
+func (m *Memo) Root(input *RelGroup, ordering lang.Ordering) *RelGroup {
 	return m.internRoot(Root{
 		Input:    input,
 		Ordering: ordering,
 	})
 }
 
-func (m *Memo) Sort(input *RelGroup, ordering opt.Ordering) *RelGroup {
+func (m *Memo) Sort(input *RelGroup, ordering lang.Ordering) *RelGroup {
 	return m.internSort(Sort{
 		Input:    input,
 		Ordering: ordering,
@@ -118,7 +117,7 @@ func (m *Memo) Constant(d lang.Datum) scalar.Group {
 	return m.internConstant(scalar.Constant{d})
 }
 
-func (m *Memo) ColRef(id opt.ColumnID, typ lang.Type) scalar.Group {
+func (m *Memo) ColRef(id lang.ColumnID, typ lang.Type) scalar.Group {
 	return m.internColRef(scalar.ColRef{id, typ})
 }
 

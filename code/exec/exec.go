@@ -9,7 +9,6 @@ import (
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/index"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 ) //)
 
@@ -31,7 +30,7 @@ type scan struct {
 	iter *index.Iterator
 	// TODO: need this to be a disjunction.
 	constraint constraint.Constraint
-	ordering   []opt.ColOrdinal
+	ordering   []lang.ColOrdinal
 }
 
 func (s *scan) Start() {}
@@ -39,7 +38,7 @@ func (s *scan) Start() {}
 func (s *scan) Next() (lang.Row, bool) {
 	next, ok := s.iter.Next()
 	if ok && s.constraint.End != nil {
-		cmp := opt.KeyCompare(next, s.constraint.End, s.ordering)
+		cmp := lang.KeyCompare(next, s.constraint.End, s.ordering)
 		if cmp == lang.GT || cmp == lang.EQ && !s.constraint.InclusiveEnd {
 			return nil, false
 		}
@@ -208,15 +207,15 @@ func appendRows(l, r lang.Row) lang.Row {
 type merge struct {
 	l         Node
 	r         Node
-	leftIdxs  []opt.ColOrdinal
-	rightIdxs []opt.ColOrdinal
+	leftIdxs  []lang.ColOrdinal
+	rightIdxs []lang.ColOrdinal
 
 	lr    lang.Row
 	rr    lang.Row
 	queue []lang.Row
 }
 
-func Merge(l, r Node, leftIdxs, rightIdxs []opt.ColOrdinal) Node {
+func Merge(l, r Node, leftIdxs, rightIdxs []lang.ColOrdinal) Node {
 	return &merge{
 		l:         l,
 		r:         r,
@@ -262,7 +261,7 @@ func (m *merge) Next() (lang.Row, bool) {
 			return nil, false
 		}
 
-		cmp := opt.RowCompare2(m.left(), m.right(), m.leftIdxs, m.rightIdxs)
+		cmp := lang.RowCompare2(m.left(), m.right(), m.leftIdxs, m.rightIdxs)
 		switch cmp {
 		case lang.LT:
 			m.lr = nil
@@ -270,12 +269,12 @@ func (m *merge) Next() (lang.Row, bool) {
 			m.rr = nil
 		case lang.EQ:
 			leftRows := []lang.Row{m.popLeft()}
-			for m.left() != nil && opt.RowCompare(leftRows[0], m.left(), m.leftIdxs) == lang.EQ {
+			for m.left() != nil && lang.RowCompare(leftRows[0], m.left(), m.leftIdxs) == lang.EQ {
 				leftRows = append(leftRows, m.popLeft())
 			}
 
 			rightRows := []lang.Row{m.popRight()}
-			for m.right() != nil && opt.RowCompare(rightRows[0], m.right(), m.rightIdxs) == lang.EQ {
+			for m.right() != nil && lang.RowCompare(rightRows[0], m.right(), m.rightIdxs) == lang.EQ {
 				rightRows = append(rightRows, m.popRight())
 			}
 
@@ -292,7 +291,7 @@ func (m *merge) Next() (lang.Row, bool) {
 	return next, true
 }
 
-func hashRow(r lang.Row, key []opt.ColOrdinal) string {
+func hashRow(r lang.Row, key []lang.ColOrdinal) string {
 	var buf bytes.Buffer
 	for i, idx := range key {
 		if i > 0 {
@@ -307,14 +306,14 @@ type hash struct {
 	l Node
 	r Node
 
-	leftIdxs  []opt.ColOrdinal
-	rightIdxs []opt.ColOrdinal
+	leftIdxs  []lang.ColOrdinal
+	rightIdxs []lang.ColOrdinal
 	queue     []lang.Row
 
 	table map[string][]lang.Row
 }
 
-func Hash(l, r Node, leftIdxs, rightIdxs []opt.ColOrdinal) Node {
+func Hash(l, r Node, leftIdxs, rightIdxs []lang.ColOrdinal) Node {
 	return &hash{
 		l:         l,
 		r:         r,
@@ -357,7 +356,7 @@ func (h *hash) Next() (lang.Row, bool) {
 // TODO: naming this sort conflicts with the sortRows package. think of a better name (maybe suffix Node to all names)
 type sortRows struct {
 	input    Node
-	ordering []opt.ColOrdinal
+	ordering []lang.ColOrdinal
 
 	rows []lang.Row
 	idx  int
@@ -366,7 +365,7 @@ type sortRows struct {
 func (s *sortRows) Start() {
 	s.rows = Spool(s.input)
 	sort.Slice(s.rows, func(i, j int) bool {
-		return opt.RowCompare(s.rows[i], s.rows[j], s.ordering) == lang.LT
+		return lang.RowCompare(s.rows[i], s.rows[j], s.ordering) == lang.LT
 	})
 }
 
@@ -378,7 +377,7 @@ func (s *sortRows) Next() (lang.Row, bool) {
 	return s.rows[s.idx-1], true
 }
 
-func Sort(in Node, ordering []opt.ColOrdinal) Node {
+func Sort(in Node, ordering []lang.ColOrdinal) Node {
 	return &sortRows{
 		input:    in,
 		ordering: ordering,

@@ -2,13 +2,12 @@ package builder
 
 import (
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 )
 
 // TODO: I guess this needs the table names as well.
 type col struct {
 	name string
-	id   opt.ColumnID
+	id   lang.ColumnID
 
 	// this seems bad: duplicated, but convenient.
 	// TODO: move this to be only stored in one place
@@ -25,11 +24,11 @@ func newScope() *scope {
 	}
 }
 
-func (s *scope) addCol(name string, id opt.ColumnID, typ lang.Type) {
+func (s *scope) addCol(name string, id lang.ColumnID, typ lang.Type) {
 	s.cols = append(s.cols, col{name, id, typ})
 }
 
-func (s *scope) resolve(name string) (opt.ColumnID, lang.Type, bool) {
+func (s *scope) resolve(name string) (lang.ColumnID, lang.Type, bool) {
 	for _, c := range s.cols {
 		if c.name == name {
 			return c.id, c.typ, true
@@ -45,8 +44,8 @@ func appendScopes(a, b *scope) *scope {
 	}
 }
 
-func (s *scope) OutCols() []opt.ColumnID {
-	cols := make([]opt.ColumnID, len(s.cols))
+func (s *scope) OutCols() []lang.ColumnID {
+	cols := make([]lang.ColumnID, len(s.cols))
 	for i := range s.cols {
 		cols[i] = s.cols[i].id
 	}

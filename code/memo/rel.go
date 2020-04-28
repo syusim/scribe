@@ -3,7 +3,6 @@ package memo
 import (
 	"github.com/justinj/scribe/code/constraint"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/scalar"
 )
 
@@ -11,7 +10,7 @@ import (
 
 type Scan struct {
 	TableName string
-	Cols      []opt.ColumnID
+	Cols      []lang.ColumnID
 
 	// Index is the ordinal of the index in the given table.
 	Index      int
@@ -52,8 +51,8 @@ func (j *Join) Child(i int) lang.Group {
 type HashJoin struct {
 	Left      *RelGroup
 	Right     *RelGroup
-	LeftCols  []opt.ColumnID
-	RightCols []opt.ColumnID
+	LeftCols  []lang.ColumnID
+	RightCols []lang.ColumnID
 }
 
 func (j *HashJoin) ChildCount() int {
@@ -74,9 +73,9 @@ func (j *HashJoin) Child(i int) lang.Group {
 type Project struct {
 	Input *RelGroup
 
-	ColIDs          []opt.ColumnID
+	ColIDs          []lang.ColumnID
 	Projections     []scalar.Group
-	PassthroughCols opt.ColSet
+	PassthroughCols lang.ColSet
 }
 
 func (p *Project) ChildCount() int {
@@ -117,7 +116,7 @@ func (s *Select) Child(i int) lang.Group {
 type Root struct {
 	Input *RelGroup
 
-	Ordering opt.Ordering
+	Ordering lang.Ordering
 }
 
 func (r *Root) ChildCount() int {
@@ -136,7 +135,7 @@ func (r *Root) Child(i int) lang.Group {
 type Sort struct {
 	Input *RelGroup
 
-	Ordering opt.Ordering
+	Ordering lang.Ordering
 }
 
 func (r *Sort) ChildCount() int {

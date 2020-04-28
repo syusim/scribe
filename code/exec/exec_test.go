@@ -9,7 +9,6 @@ import (
 	"github.com/justinj/bitwise/datadriven"
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 	"github.com/justinj/scribe/code/sexp"
 )
 
@@ -101,8 +100,8 @@ func TestExec(t *testing.T) {
 				args := parseArgs(td.Input)
 				var left Node
 				var right Node
-				var leftIdxs []opt.ColOrdinal
-				var rightIdxs []opt.ColOrdinal
+				var leftIdxs []lang.ColOrdinal
+				var rightIdxs []lang.ColOrdinal
 				for _, a := range args {
 					switch a.key {
 					case "left":
@@ -116,8 +115,8 @@ func TestExec(t *testing.T) {
 						}
 						ls := s.(sexp.List)
 						for _, pair := range ls {
-							leftIdxs = append(leftIdxs, sexp.Int(sexp.Nth(pair, 0)))
-							rightIdxs = append(rightIdxs, sexp.Int(sexp.Nth(pair, 0)))
+							leftIdxs = append(leftIdxs, lang.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
+							rightIdxs = append(rightIdxs, lang.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
 						}
 					}
 				}
@@ -128,8 +127,8 @@ func TestExec(t *testing.T) {
 				args := parseArgs(td.Input)
 				var left Node
 				var right Node
-				var leftIdxs []opt.ColOrdinal
-				var rightIdxs []opt.ColOrdinal
+				var leftIdxs []lang.ColOrdinal
+				var rightIdxs []lang.ColOrdinal
 				for _, a := range args {
 					switch a.key {
 					case "left":
@@ -143,8 +142,8 @@ func TestExec(t *testing.T) {
 						}
 						ls := s.(sexp.List)
 						for _, pair := range ls {
-							leftIdxs = append(leftIdxs, opt.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
-							rightIdxs = append(rightIdxs, opt.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
+							leftIdxs = append(leftIdxs, lang.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
+							rightIdxs = append(rightIdxs, lang.ColOrdinal(sexp.Int(sexp.Nth(pair, 0))))
 						}
 					}
 				}

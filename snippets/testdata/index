@@ -1,6 +1,6 @@
 load name=t
 //(a
-d := make([]opt.Row, len(data.Rows))
+d := make([]lang.Row, len(data.Rows))
 copy(d, data.Rows) //)
 
 //(b
@@ -15,7 +15,7 @@ extract-ctx name=t section=a
 ----
 ----
 ++++
-d := make([]opt.Row, len(data.Rows))
+d := make([]lang.Row, len(data.Rows))
 copy(d, data.Rows)
 ++++
 

@@ -4,10 +4,9 @@ import (
 	"sort"
 
 	"github.com/justinj/scribe/code/lang"
-	"github.com/justinj/scribe/code/opt"
 )
 
-type order []opt.ColOrdinal
+type order []lang.ColOrdinal
 
 type T struct {
 	data    []lang.Row
@@ -41,7 +40,7 @@ func compare(a, b lang.Row, orderBy order) cmpResult {
 	return eq
 }
 
-// TODO: swap this for opt.KeyCompare
+// TODO: swap this for lang.KeyCompare
 func compareKey(a lang.Row, key lang.Key, orderBy order) cmpResult {
 	for i := range key {
 		idx := orderBy[i]
@@ -56,7 +55,7 @@ func compareKey(a lang.Row, key lang.Key, orderBy order) cmpResult {
 }
 
 //(index.header
-func New(data []lang.Row, order []opt.ColOrdinal) *T { //)
+func New(data []lang.Row, order []lang.ColOrdinal) *T { //)
 	//(index.make-a-copy
 	d := make([]lang.Row, len(data))
 	copy(d, data)
