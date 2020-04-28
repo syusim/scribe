@@ -3,6 +3,7 @@ package sexp
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"unicode"
 )
 
@@ -179,4 +180,16 @@ func Parse(s string) (Sexp, error) {
 
 	munch()
 	return next()
+}
+
+func Nth(s Sexp, n int) Sexp {
+	return s.(List)[n]
+}
+
+func Int(s Sexp) int {
+	i, err := strconv.Atoi(string(s.(Atom)))
+	if err != nil {
+		panic(err)
+	}
+	return i
 }

@@ -1,25 +1,29 @@
 load name=left
 [[1 "one"]
  [2 "two"]
- [3 "three"]]
+ [3 "two"]]
 ----
 
 load name=right
 [[1 "foo"]
- [4 "bar"]
- [7 "baz"]]
+ [4 "two"]
+ [3 "two"]]
 ----
 
-cross
+hash
 left=left
 right=right
+eq=[[0 0]]
 ----
 [1 "one" 1 "foo"]
-[2 "two" 1 "foo"]
-[3 "three" 1 "foo"]
-[1 "one" 4 "bar"]
-[2 "two" 4 "bar"]
-[3 "three" 4 "bar"]
-[1 "one" 7 "baz"]
-[2 "two" 7 "baz"]
-[3 "three" 7 "baz"]
+[3 "two" 3 "two"]
+
+hash
+left=left
+right=right
+eq=[[1 1]]
+----
+[2 "two" 4 "two"]
+[3 "two" 4 "two"]
+[2 "two" 3 "two"]
+[3 "two" 3 "two"]

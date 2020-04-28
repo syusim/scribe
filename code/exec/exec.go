@@ -2,6 +2,7 @@ package exec
 
 //(imports
 import (
+	"bytes"
 	"sort"
 
 	"github.com/justinj/scribe/code/cat"
@@ -182,9 +183,7 @@ func (c *cross) Next() (lang.Row, bool) {
 		}
 	}
 
-	result := make(lang.Row, 0, len(c.leftRows[c.leftIdx])+len(c.rightRow))
-	result = append(result, c.leftRows[c.leftIdx]...)
-	result = append(result, c.rightRow...)
+	result := appendRows(c.leftRows[c.leftIdx], c.rightRow)
 	c.leftIdx++
 
 	return result, true
@@ -195,6 +194,74 @@ func Cross(l, r Node) Node {
 		l: l,
 		r: r,
 	}
+}
+
+func appendRows(l, r lang.Row) lang.Row {
+	result := make(lang.Row, 0, len(l)+len(r))
+	result = append(result, l...)
+	result = append(result, r...)
+	return result
+}
+
+func hashRow(r lang.Row, key []int) string {
+	var buf bytes.Buffer
+	for i, idx := range key {
+		if i > 0 {
+			buf.WriteByte('/')
+		}
+		r[idx].Format(&buf)
+	}
+	return buf.String()
+}
+
+type hash struct {
+	l Node
+	r Node
+
+	leftIdxs  []int
+	rightIdxs []int
+	queue     []lang.Row
+
+	table map[string][]lang.Row
+}
+
+func Hash(l, r Node, leftIdxs, rightIdxs []int) Node {
+	return &hash{
+		l:         l,
+		r:         r,
+		leftIdxs:  leftIdxs,
+		rightIdxs: rightIdxs,
+	}
+}
+
+func (h *hash) Start() {
+	h.l.Start()
+	h.r.Start()
+
+	h.table = make(map[string][]lang.Row)
+
+	for next, ok := h.l.Next(); ok; next, ok = h.l.Next() {
+		key := hashRow(next, h.leftIdxs)
+		h.table[key] = append(h.table[key], next)
+	}
+}
+
+func (h *hash) Next() (lang.Row, bool) {
+	for len(h.queue) == 0 {
+		next, ok := h.r.Next()
+		if !ok {
+			return nil, false
+		}
+		key := hashRow(next, h.rightIdxs)
+		xs := h.table[key]
+		for _, x := range xs {
+			h.queue = append(h.queue, appendRows(x, next))
+		}
+	}
+
+	var next lang.Row
+	next, h.queue = h.queue[0], h.queue[1:]
+	return next, true
 }
 
 //(sort
