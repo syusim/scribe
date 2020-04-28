@@ -19,14 +19,6 @@ func (i *Index) Scan() *index.Iterator {
 	return i.data.Iter()
 }
 
-func (i *Index) ScanGT(key lang.Key) *index.Iterator {
-	return i.data.SeekGT(key)
-}
-
-func (i *Index) ScanGE(key lang.Key) *index.Iterator {
-	return i.data.SeekGE(key)
-}
-
 type Table struct {
 	Name    string
 	cols    []lang.Column

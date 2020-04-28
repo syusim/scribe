@@ -51,9 +51,11 @@ func Scan(idx *cat.Index, constraint constraint.Constraint) Node {
 	var iter *index.Iterator
 	if constraint.Start != nil {
 		if constraint.InclusiveStart {
-			iter = idx.ScanGE(constraint.Start)
+			iter = idx.Scan()
+			iter.SeekGE(constraint.Start)
 		} else {
-			iter = idx.ScanGT(constraint.Start)
+			iter = idx.Scan()
+			iter.SeekGT(constraint.Start)
 		}
 	} else {
 		iter = idx.Scan()

@@ -82,26 +82,16 @@ func (idx *T) Iter() *Iterator {
 	}
 } //)
 
-func (idx *T) SeekGE(key lang.Key) *Iterator {
-	start := sort.Search(len(idx.data), func(i int) bool {
-		return compareKey(idx.data[i], key, idx.orderBy) != lt
+func (it *Iterator) SeekGE(key lang.Key) {
+	it.pos = sort.Search(len(it.index.data), func(i int) bool {
+		return compareKey(it.index.data[i], key, it.index.orderBy) != lt
 	})
-
-	return &Iterator{
-		index: idx,
-		pos:   start,
-	}
 }
 
-func (idx *T) SeekGT(key lang.Key) *Iterator {
-	start := sort.Search(len(idx.data), func(i int) bool {
-		return compareKey(idx.data[i], key, idx.orderBy) == gt
+func (it *Iterator) SeekGT(key lang.Key) {
+	it.pos = sort.Search(len(it.index.data), func(i int) bool {
+		return compareKey(it.index.data[i], key, it.index.orderBy) == gt
 	})
-
-	return &Iterator{
-		index: idx,
-		pos:   start,
-	}
 }
 
 //(index.it.next
