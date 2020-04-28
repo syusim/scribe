@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/justinj/bitwise/datadriven"
+	"github.com/cockroachdb/datadriven"
 	"github.com/justinj/scribe/code/executor"
 )
 
@@ -12,7 +12,7 @@ import (
 func TestLogic(t *testing.T) {
 	datadriven.Walk(t, "testdata", func(t *testing.T, path string) {
 		e := executor.New()
-		datadriven.RunTest(t, path, func(td *datadriven.TestData) string {
+		datadriven.RunTest(t, path, func(t *testing.T, td *datadriven.TestData) string {
 			r, err := e.Run(td.Input)
 			if err != nil {
 				return fmt.Sprintf("error: %s\n", err)

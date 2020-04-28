@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/justinj/bitwise/datadriven"
+	"github.com/cockroachdb/datadriven"
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/builder"
 	"github.com/justinj/scribe/code/cat"
@@ -16,7 +16,7 @@ import (
 func TestNorm(t *testing.T) {
 	datadriven.Walk(t, "testdata/norm", func(t *testing.T, path string) {
 		catalog := cat.New()
-		datadriven.RunTest(t, path, func(td *datadriven.TestData) string {
+		datadriven.RunTest(t, path, func(t *testing.T, td *datadriven.TestData) string {
 			switch td.Cmd {
 			case "ddl":
 				stmt, err := ast.ParseStatement(td.Input)

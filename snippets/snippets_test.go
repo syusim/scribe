@@ -6,14 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/justinj/bitwise/datadriven"
+	"github.com/cockroachdb/datadriven"
 )
 
 // TODO: extract out all the gross duplication of arg parsing
 func TestSnippets(t *testing.T) {
 	datadriven.Walk(t, "testdata", func(t *testing.T, path string) {
 		files := make(map[string]Block)
-		datadriven.RunTest(t, path, func(d *datadriven.TestData) string {
+		datadriven.RunTest(t, path, func(t *testing.T, d *datadriven.TestData) string {
 			switch d.Cmd {
 			case "load":
 				var name string

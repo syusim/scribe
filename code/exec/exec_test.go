@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/justinj/bitwise/datadriven"
+	"github.com/cockroachdb/datadriven"
 	"github.com/justinj/scribe/code/ast"
 	"github.com/justinj/scribe/code/lang"
 	"github.com/justinj/scribe/code/sexp"
@@ -55,7 +55,7 @@ func printResult(node Node) string {
 func TestExec(t *testing.T) {
 	datadriven.Walk(t, "testdata", func(t *testing.T, path string) {
 		rowSets := make(map[string][]lang.Row)
-		datadriven.RunTest(t, path, func(td *datadriven.TestData) string {
+		datadriven.RunTest(t, path, func(t *testing.T, td *datadriven.TestData) string {
 			switch td.Cmd {
 			case "load":
 				s, err := sexp.Parse(td.Input)
