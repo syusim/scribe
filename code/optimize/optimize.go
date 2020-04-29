@@ -24,9 +24,7 @@ type optResult struct {
 }
 
 type optimizer struct {
-	catalog *cat.Catalog
-	// TODO: kill exprCosts? subsumed by optimized
-	exprCosts map[lang.Expr]Cost
+	catalog   *cat.Catalog
 	optimized map[pair]optResult
 	props     map[string]*phys.Props
 	m         *memo.Memo
@@ -48,7 +46,6 @@ func (o *optimizer) internPhys(props phys.Props) *phys.Props {
 
 func Optimize(g lang.Group, catalog *cat.Catalog, m *memo.Memo) lang.Group {
 	o := &optimizer{
-		exprCosts: make(map[lang.Expr]Cost),
 		optimized: make(map[pair]optResult),
 		props:     make(map[string]*phys.Props),
 		catalog:   catalog,
@@ -62,6 +59,16 @@ func Optimize(g lang.Group, catalog *cat.Catalog, m *memo.Memo) lang.Group {
 
 type Cost float64
 
+// Enforce computes the enforcer operator which brings an expression satisfying
+// physical props from to physical props to.
+func enforce(from, to *phys.Props, e *memo.RelGroup) lang.Expr {
+	return &memo.Sort{
+		Input:    e,
+		Ordering: to.Ordering,
+	}
+}
+
+// OptimizeGroup optimizes group g relative to physical props reqd.
 func (o *optimizer) OptimizeGroup(g lang.Group, reqd *phys.Props) {
 	p := pair{g, reqd}
 	if _, ok := o.optimized[p]; ok {
@@ -79,31 +86,24 @@ func (o *optimizer) OptimizeGroup(g lang.Group, reqd *phys.Props) {
 			if o.CanProvide(expr, next) {
 				o.OptimizeExpr(expr, next)
 
-				curExpr := expr
-
+				withProps := expr
 				if reqd != next {
-					// TODO we actually need to compute the "difference" operator between the two
-					// sets of physical props.
-					// TODO: tidy this up a little, extract it. make it nice, y'know?
-					curExpr = &memo.Sort{
-						Input:    g.(*memo.RelGroup),
-						Ordering: reqd.Ordering,
-					}
+					withProps = enforce(next, reqd, g.(*memo.RelGroup))
 				}
 
-				cost := o.ComputeCost(curExpr, next)
+				cost := o.ComputeCost(withProps, next)
 
 				if cost < bestCost {
 					bestCost = cost
 					bestIdx = i
-					bestExpr = curExpr
+					bestExpr = withProps
 				}
 			}
-			pro, ok := next.Weaken()
+			weaker, ok := next.Weaken()
 			if !ok {
 				break
 			}
-			next = pro
+			next = weaker
 
 			// TODO: I'm not sure this is correct in general.
 			o.OptimizeGroup(g, next)
@@ -167,6 +167,5 @@ func (o *optimizer) ComputeCost(e lang.Expr, reqd *phys.Props) Cost {
 	}
 	cost += 1
 
-	o.exprCosts[e] = cost
-	return o.exprCosts[e]
+	return cost
 }
