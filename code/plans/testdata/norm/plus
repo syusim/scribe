@@ -13,7 +13,7 @@ ok
 plan
 (project abc [(+ 1 1)])
 ----
--> Project [4] []
+-> Project [4] {}
  -> Scan [1 2 3] @default
  -> Times
   -> Constant (2)
@@ -22,7 +22,7 @@ plan
 plan
 (project abc [(+ 1 (* 1 1))])
 ----
--> Project [4] []
+-> Project [4] {}
  -> Scan [1 2 3] @default
  -> Times
   -> Constant (2)

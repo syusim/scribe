@@ -1,6 +1,7 @@
 package lang
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 )
@@ -104,5 +105,14 @@ func (c *ColSet) String() string {
 		result = append(result, c)
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i] < result[j] })
-	return fmt.Sprintf("%v", result)
+	var buf bytes.Buffer
+	buf.WriteByte('{')
+	for i := range result {
+		if i > 0 {
+			buf.WriteByte(',')
+		}
+		fmt.Fprintf(&buf, "%d", result[i])
+	}
+	buf.WriteByte('}')
+	return buf.String()
 }

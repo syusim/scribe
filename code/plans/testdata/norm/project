@@ -51,7 +51,7 @@ plan
   abc
   [(+ a a)]) _ [a])
 ----
--> Project [4] []
+-> Project [4] {}
  -> Scan [1 2 3] @default
  -> Times
   -> Constant (2)
@@ -70,7 +70,7 @@ plan
   [(+ a a)]) _ [a])
   [(+ a a)]) _ [a])
 ----
--> Project [8] []
+-> Project [8] {}
  -> Scan [1 2 3] @default
  -> Times
   -> Constant (2)
