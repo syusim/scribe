@@ -133,6 +133,14 @@ type ColumnID int
 
 type Ordering []ColumnID
 
+func (o Ordering) Cols() ColSet {
+	var cols ColSet
+	for _, c := range o {
+		cols.Add(c)
+	}
+	return cols
+}
+
 // TODO: merge the lang and opt packages
 func RowCompare(a, b Row, ord []ColOrdinal) CmpResult {
 	for _, idx := range ord {

@@ -11,6 +11,8 @@ import (
 
 // TODO: re-evaluate if these should be public. i feel like they could just be
 // their own package even, or live in memo?
+// CanProvide returns whether or not the expression e is capable of providing
+// the physical props p.
 func (o *optimizer) CanProvide(e lang.Expr, p *phys.Props) bool {
 	switch e := e.(type) {
 	case *memo.Select:
@@ -20,9 +22,9 @@ func (o *optimizer) CanProvide(e lang.Expr, p *phys.Props) bool {
 		// Can provide it by requiring it of the input.
 		return true
 	case *memo.HashJoin:
-		// TODO: we can provide the right's ordering!
-		// Can't provide anything!
-		return len(p.Ordering) == 0
+		// We can provide an ordering by enforcing it of the probe side, but we can
+		// only enforce it of the probe side if the probe side has those columns.
+		return p.Ordering.Cols().SubsetOf(e.Probe.Props.OutputCols)
 	case *memo.Join:
 		// Can't provide anything!
 		return len(p.Ordering) == 0
@@ -54,6 +56,9 @@ func (o *optimizer) CanProvide(e lang.Expr, p *phys.Props) bool {
 	}
 }
 
+// ReqdPhys will only be called if CanProvide(e, p) is true. It returns the
+// physical props that must be required of the i-th child of e in order for e
+// to be able to provide the physical props p.
 func (o *optimizer) ReqdPhys(e lang.Expr, p *phys.Props, i int) *phys.Props {
 	switch e := e.(type) {
 	case *memo.Root:
@@ -66,7 +71,12 @@ func (o *optimizer) ReqdPhys(e lang.Expr, p *phys.Props, i int) *phys.Props {
 	case *memo.Join:
 		return o.internPhys(phys.Min)
 	case *memo.HashJoin:
-		return o.internPhys(phys.Min)
+		// 1 is the Probe table
+		if i == 1 {
+			return p
+		} else {
+			return o.internPhys(phys.Min)
+		}
 	case *memo.Sort:
 		return o.internPhys(phys.Min)
 	case *memo.Select:

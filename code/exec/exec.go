@@ -303,8 +303,8 @@ func hashRow(r lang.Row, key []lang.ColOrdinal) string {
 }
 
 type hash struct {
-	l Node
-	r Node
+	build Node
+	probe Node
 
 	leftIdxs  []lang.ColOrdinal
 	rightIdxs []lang.ColOrdinal
@@ -313,22 +313,22 @@ type hash struct {
 	table map[string][]lang.Row
 }
 
-func Hash(l, r Node, leftIdxs, rightIdxs []lang.ColOrdinal) Node {
+func Hash(build, probe Node, leftIdxs, rightIdxs []lang.ColOrdinal) Node {
 	return &hash{
-		l:         l,
-		r:         r,
+		build:     build,
+		probe:     probe,
 		leftIdxs:  leftIdxs,
 		rightIdxs: rightIdxs,
 	}
 }
 
 func (h *hash) Start() {
-	h.l.Start()
-	h.r.Start()
+	h.build.Start()
+	h.probe.Start()
 
 	h.table = make(map[string][]lang.Row)
 
-	for next, ok := h.l.Next(); ok; next, ok = h.l.Next() {
+	for next, ok := h.build.Next(); ok; next, ok = h.build.Next() {
 		key := hashRow(next, h.leftIdxs)
 		h.table[key] = append(h.table[key], next)
 	}
@@ -336,7 +336,7 @@ func (h *hash) Start() {
 
 func (h *hash) Next() (lang.Row, bool) {
 	for len(h.queue) == 0 {
-		next, ok := h.r.Next()
+		next, ok := h.probe.Next()
 		if !ok {
 			return nil, false
 		}

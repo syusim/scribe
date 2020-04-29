@@ -48,3 +48,24 @@ plan-full
    -> Plus
     -> Constant (1)
     -> ColRef (4)
+
+# Ensure we can pass orderings through hash join.
+plan-full
+(order-by
+  (join abc xyz (= a x))
+  [z])
+----
+-> Root (required ordering: [6]) 
+ -> HashJoin [1=4]
+  -> Scan [1 2 3] @a_idx
+  -> Scan [4 5 6] @z_y_idx
+
+plan-full
+(order-by
+  (join abc xyz (= a x))
+  [b])
+----
+-> Root (required ordering: [2]) 
+ -> HashJoin [1=4]
+  -> Scan [4 5 6] @x_idx
+  -> Scan [1 2 3] @b_idx

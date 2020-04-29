@@ -93,12 +93,23 @@ func (e *explorer) generateHashJoins(expr lang.Expr, add func(lang.Expr)) {
 				extraConds = append(extraConds, f)
 			}
 		}
-		// TODO: add the commuted version too for the ordering
+
 		if len(leftCols) > 0 {
 			add(e.m.Select(
 				e.m.HashJoin(
 					j.Left,
 					j.Right,
+					leftCols,
+					rightCols,
+				),
+				e.m.Filters(extraConds),
+			).Unwrap())
+
+			// Commute it, because we can pass through the ordering on the Probe table.
+			add(e.m.Select(
+				e.m.HashJoin(
+					j.Right,
+					j.Left,
 					leftCols,
 					rightCols,
 				),

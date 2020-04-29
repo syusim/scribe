@@ -82,17 +82,6 @@ func (o *optimizer) OptimizeGroup(g lang.Group, reqd *phys.Props) {
 					// TODO we actually need to compute the "difference" operator between the two
 					// sets of physical props.
 					// TODO: tidy this up a little, extract it. make it nice, y'know?
-					// So the wonkiness here I don't understand yet is: the Sort operator
-					// technically belongs in ths same group as its input, as it has the
-					// same logical properties. That's no good, however, since it means
-					// it refers to itself and contains a cycle, and invaldiates a thing
-					// I thought was true, which was that every relgroup shows up in a
-					// final tree at most once. I think the answer is that enforcers must live
-					// outside the memo, or in their own group, and then when we twiddle
-					// something that is a parent of an enforcer we have to redirect its
-					// pointer to the enforced version. I'm not sure how to reconcile
-					// this with the definitional fact of "everything with the same
-					// logical props lives in the same group."
 					curExpr = &memo.Sort{
 						Input:    g.(*memo.RelGroup),
 						Ordering: reqd.Ordering,

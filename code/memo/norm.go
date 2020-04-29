@@ -41,10 +41,10 @@ func (m *Memo) Join(left, right *RelGroup, on scalar.Group) *RelGroup {
 	})
 }
 
-func (m *Memo) HashJoin(left, right *RelGroup, leftCols, rightCols []lang.ColumnID) *RelGroup {
+func (m *Memo) HashJoin(build, probe *RelGroup, leftCols, rightCols []lang.ColumnID) *RelGroup {
 	return m.internHashJoin(HashJoin{
-		Left:      left,
-		Right:     right,
+		Build:     build,
+		Probe:     probe,
 		LeftCols:  leftCols,
 		RightCols: rightCols,
 	})

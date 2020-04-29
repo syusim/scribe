@@ -49,8 +49,8 @@ func (j *Join) Child(i int) lang.Group {
 }
 
 type HashJoin struct {
-	Left      *RelGroup
-	Right     *RelGroup
+	Build     *RelGroup
+	Probe     *RelGroup
 	LeftCols  []lang.ColumnID
 	RightCols []lang.ColumnID
 }
@@ -62,9 +62,9 @@ func (j *HashJoin) ChildCount() int {
 func (j *HashJoin) Child(i int) lang.Group {
 	switch i {
 	case 0:
-		return j.Left
+		return j.Build
 	case 1:
-		return j.Right
+		return j.Probe
 	default:
 		panic("out of bounds")
 	}

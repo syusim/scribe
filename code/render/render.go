@@ -95,12 +95,12 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, lang.ColMap, error) {
 		return exec.Select(in, pred), m, nil
 
 	case *memo.HashJoin:
-		left, leftMap, err := b.build(o.Left)
+		build, leftMap, err := b.build(o.Build)
 		if err != nil {
 			return nil, lang.ColMap{}, err
 		}
 
-		right, rightMap, err := b.build(o.Right)
+		probe, rightMap, err := b.build(o.Probe)
 		if err != nil {
 			return nil, lang.ColMap{}, err
 		}
@@ -126,7 +126,7 @@ func (b *builder) build(e *memo.RelGroup) (exec.Node, lang.ColMap, error) {
 			rightIdxs[i] = lang.ColOrdinal(idx)
 		}
 
-		return exec.Hash(left, right, leftIdxs, rightIdxs), m, nil
+		return exec.Hash(build, probe, leftIdxs, rightIdxs), m, nil
 	case *memo.Join:
 		left, leftMap, err := b.build(o.Left)
 		if err != nil {
