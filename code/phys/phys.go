@@ -7,7 +7,7 @@ import (
 	"github.com/justinj/scribe/code/lang"
 )
 
-var Min = Props{}
+var Min = &Props{}
 
 type Props struct {
 	Ordering lang.Ordering
@@ -27,7 +27,7 @@ func Hash(p Props) string {
 // Weaken climbs down the partial order. Perhaps there's a
 // smarter way we could do it than hopping immediately to the
 // bottom once we have more execution things.
-func (p Props) Weaken() (Props, bool) {
+func (p Props) Weaken() (*Props, bool) {
 	if len(p.Ordering) == 0 {
 		return Min, false
 	}

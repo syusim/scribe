@@ -69,30 +69,30 @@ func (o *optimizer) ReqdPhys(e lang.Expr, p *phys.Props, i int) *phys.Props {
 
 		return inputProps
 	case *memo.Join:
-		return o.internPhys(phys.Min)
+		return phys.Min
 	case *memo.HashJoin:
 		// 1 is the Probe table
 		if i == 1 {
 			return p
 		} else {
-			return o.internPhys(phys.Min)
+			return phys.Min
 		}
 	case *memo.Sort:
-		return o.internPhys(phys.Min)
+		return phys.Min
 	case *memo.Select:
 		if i == 0 {
 			return p
 		} else {
-			return o.internPhys(phys.Min)
+			return phys.Min
 		}
 	case *memo.Project:
 		if i == 0 {
 			return p
 		} else {
-			return o.internPhys(phys.Min)
+			return phys.Min
 		}
 	case scalar.Group:
-		return o.internPhys(phys.Min)
+		return phys.Min
 	default:
 		panic(fmt.Sprintf("unhandled: %T", e))
 	}

@@ -34,6 +34,9 @@ type optimizer struct {
 
 // special case phys.Min so we can just pass that around.
 func (o *optimizer) internPhys(props phys.Props) *phys.Props {
+	if len(props.Ordering) == 0 {
+		return phys.Min
+	}
 	h := phys.Hash(props)
 	if p, ok := o.props[h]; ok {
 		return p
@@ -52,9 +55,9 @@ func Optimize(g lang.Group, catalog *cat.Catalog, m *memo.Memo) lang.Group {
 		m:         m,
 	}
 
-	o.OptimizeGroup(g, o.internPhys(phys.Min))
+	o.OptimizeGroup(g, phys.Min)
 
-	return o.twiddle(g, o.internPhys(phys.Min))
+	return o.twiddle(g, phys.Min)
 }
 
 type Cost float64
@@ -100,7 +103,7 @@ func (o *optimizer) OptimizeGroup(g lang.Group, reqd *phys.Props) {
 			if !ok {
 				break
 			}
-			next = o.internPhys(pro)
+			next = pro
 
 			// TODO: I'm not sure this is correct in general.
 			o.OptimizeGroup(g, next)
