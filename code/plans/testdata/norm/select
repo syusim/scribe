@@ -98,3 +98,21 @@ plan-full
 (select abc (= a 1))
 ----
 -> Scan [1 2 3] @a_idx [1 - 1]
+
+# TODO
+plan
+(select 
+ (select abc (= a 1))
+ (= b 2))
+----
+-> Select
+ -> Select
+  -> Scan [1 2 3] @a_idx
+  -> Filters
+   -> Eq
+    -> ColRef (1)
+    -> Constant (1)
+ -> Filters
+  -> Eq
+   -> ColRef (2)
+   -> Constant (2)
