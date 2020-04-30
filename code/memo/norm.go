@@ -138,7 +138,11 @@ func (m *Memo) Plus(left, right scalar.Group) scalar.Group {
 }
 
 func (m *Memo) Times(left, right scalar.Group) scalar.Group {
-	if e := m.matchRules([]interface{}{left, right}, []rule{}); e != nil {
+	if e := m.matchRules([]interface{}{left, right}, []rule{
+		FoldOneTimes,
+		FoldTimesOne,
+		AssociateTimes,
+	}); e != nil {
 		return e.(scalar.Group)
 	}
 
