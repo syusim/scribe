@@ -13,6 +13,7 @@ import (
 	"github.com/justinj/scribe/code/optimize"
 )
 
+//short for norman
 func TestNorm(t *testing.T) {
 	datadriven.Walk(t, "testdata/norm", func(t *testing.T, path string) {
 		catalog := cat.New()

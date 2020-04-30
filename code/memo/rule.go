@@ -62,6 +62,35 @@ func SimplifyPlusTimes(m *Memo, args []interface{}) lang.Group {
 	return nil
 }
 
+//Times Rules.
+
+func FoldTimesOne(m *Memo, args []interface{}) lang.Group {
+	if eqConst(args[0].(scalar.Group), lang.DInt(1)) {
+		return args[1].(lang.Group)
+	}
+	return nil
+}
+
+func FoldOneTimes(m *Memo, args []interface{}) lang.Group {
+	if eqConst(args[1].(scalar.Group), lang.DInt(1)) {
+		return args[0].(lang.Group)
+	}
+	return nil
+}
+
+func AssociateTimes(m *Memo, args []interface{}) lang.Group {
+	if left, ok := args[0].(*scalar.Times); ok {
+		return m.Times(
+			left.Left,
+			m.Times(
+				left.Right,
+				args[1].(scalar.Group),
+			),
+		)
+	}
+	return nil
+}
+
 // Join Rules.
 
 func WrapJoinConditionInFilters(m *Memo, args []interface{}) lang.Group {
