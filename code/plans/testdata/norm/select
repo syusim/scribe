@@ -106,13 +106,11 @@ plan
  (= b 2))
 ----
 -> Select
- -> Select
-  -> Scan [1 2 3] @a_idx
-  -> Filters
-   -> Eq
-    -> ColRef (1)
-    -> Constant (1)
+ -> Scan [1 2 3] @a_idx
  -> Filters
   -> Eq
    -> ColRef (2)
    -> Constant (2)
+  -> Eq
+   -> ColRef (1)
+   -> Constant (1)

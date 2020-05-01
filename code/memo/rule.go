@@ -176,6 +176,24 @@ func EliminateSelect(m *Memo, args []interface{}) lang.Group {
 	return nil
 }
 
+func MergeSelects(m *Memo, args []interface{}) lang.Group {
+	input, filter := args[0].(*RelGroup), args[1].(*scalar.Filters)
+	if s, ok := input.Unwrap().(*Select); ok {
+		innerInput, innerFilter := s.Input, s.Filter
+		if f, ok := innerFilter.(*scalar.Filters); ok {
+			return m.Select(
+				innerInput,
+				m.Filters(concat(
+					filter,
+					f,
+				)),
+			)
+		}
+	}
+
+	return nil
+}
+
 // Project Rules.
 
 func EliminateProject(m *Memo, args []interface{}) lang.Group {

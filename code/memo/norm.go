@@ -79,6 +79,7 @@ func (m *Memo) Select(input *RelGroup, filter scalar.Group) *RelGroup {
 		// TODO: Can this be its own rule?
 		SimplifySelectFilters,
 		EliminateSelect,
+		MergeSelects,
 	}); e != nil {
 		return e.(*RelGroup)
 	}
