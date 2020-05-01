@@ -17,6 +17,12 @@ type RelGroup struct {
 	Props Props
 }
 
+func G(e relExpr) *RelGroup {
+	r := &RelGroup{Es: []relExpr{e}}
+	buildProps(r)
+	return r
+}
+
 func (r *RelGroup) Unwrap() relExpr {
 	return r.Es[0]
 }

@@ -15,11 +15,15 @@ plan
 ----
 -> Project [4] {}
  -> Scan [1 2 3] @default
- -> Constant (2)
+ -> Plus
+  -> Constant (1)
+  -> Constant (1)
 
 plan
 (project abc [(+ 1 (* 1 1))])
 ----
 -> Project [4] {}
  -> Scan [1 2 3] @default
- -> Constant (2)
+ -> Plus
+  -> Constant (1)
+  -> Constant (1)

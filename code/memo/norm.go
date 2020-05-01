@@ -7,7 +7,7 @@ import (
 )
 
 func (m *Memo) Scan(tableName string, cols []lang.ColumnID, indexId int, constraint constraint.Constraint) *RelGroup {
-	return m.internScan(Scan{
+	return G(&Scan{
 		TableName:  tableName,
 		Cols:       cols,
 		Index:      indexId,
@@ -34,7 +34,7 @@ func (m *Memo) Join(left, right *RelGroup, on scalar.Group) *RelGroup {
 		return e.(*RelGroup)
 	}
 
-	return m.internJoin(Join{
+	return G(&Join{
 		Left:  left,
 		Right: right,
 		On:    on,
@@ -42,7 +42,7 @@ func (m *Memo) Join(left, right *RelGroup, on scalar.Group) *RelGroup {
 }
 
 func (m *Memo) HashJoin(build, probe *RelGroup, leftCols, rightCols []lang.ColumnID) *RelGroup {
-	return m.internHashJoin(HashJoin{
+	return G(&HashJoin{
 		Build:     build,
 		Probe:     probe,
 		LeftCols:  leftCols,
@@ -64,7 +64,7 @@ func (m *Memo) Project(
 		return e.(*RelGroup)
 	}
 
-	return m.internProject(Project{
+	return G(&Project{
 		Input:           input,
 		ColIDs:          colIDs,
 		Projections:     projections,
@@ -93,32 +93,32 @@ func (m *Memo) Select(input *RelGroup, filter scalar.Group) *RelGroup {
 		)
 	}
 
-	return m.internSelect(Select{
+	return G(&Select{
 		Input:  input,
 		Filter: filter,
 	})
 }
 
 func (m *Memo) Root(input *RelGroup, ordering lang.Ordering) *RelGroup {
-	return m.internRoot(Root{
+	return G(&Root{
 		Input:    input,
 		Ordering: ordering,
 	})
 }
 
 func (m *Memo) Sort(input *RelGroup, ordering lang.Ordering) *RelGroup {
-	return m.internSort(Sort{
+	return G(&Sort{
 		Input:    input,
 		Ordering: ordering,
 	})
 }
 
 func (m *Memo) Constant(d lang.Datum) scalar.Group {
-	return m.internConstant(scalar.Constant{d})
+	return &scalar.Constant{d}
 }
 
 func (m *Memo) ColRef(id lang.ColumnID, typ lang.Type) scalar.Group {
-	return m.internColRef(scalar.ColRef{id, typ})
+	return &scalar.ColRef{id, typ}
 }
 
 func (m *Memo) Plus(left, right scalar.Group) scalar.Group {
@@ -126,15 +126,11 @@ func (m *Memo) Plus(left, right scalar.Group) scalar.Group {
 		FoldZeroPlus,
 		FoldPlusZero,
 		AssociatePlus,
-
-		// Goofy rules to simplify one very specific case.
-		SimplifyPlusPlus,
-		SimplifyPlusTimes,
 	}); e != nil {
 		return e.(scalar.Group)
 	}
 
-	return m.internPlus(scalar.Plus{left, right})
+	return &scalar.Plus{left, right}
 }
 
 func (m *Memo) Times(left, right scalar.Group) scalar.Group {
@@ -146,21 +142,21 @@ func (m *Memo) Times(left, right scalar.Group) scalar.Group {
 		return e.(scalar.Group)
 	}
 
-	return m.internTimes(scalar.Times{left, right})
+	return &scalar.Times{left, right}
 }
 
 func (m *Memo) And(left, right scalar.Group) scalar.Group {
-	return m.internAnd(scalar.And{left, right})
+	return &scalar.And{left, right}
 }
 
 func (m *Memo) Eq(left, right scalar.Group) scalar.Group {
-	return m.internEq(scalar.Eq{left, right})
+	return &scalar.Eq{left, right}
 }
 
 func (m *Memo) Filters(args []scalar.Group) scalar.Group {
-	return m.internFilters(scalar.Filters{args})
+	return &scalar.Filters{args}
 }
 
 func (m *Memo) Func(op lang.Func, args []scalar.Group) scalar.Group {
-	return m.internFunc(scalar.Func{op, args})
+	return &scalar.Func{op, args}
 }

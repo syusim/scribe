@@ -6,4 +6,5 @@ import (
 )
 
 func DeriveFDsFromFilter(e lang.Expr) *fd.FDSet {
+	return nil
 }

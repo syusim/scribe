@@ -53,8 +53,8 @@ plan
 ----
 -> Project [4] {}
  -> Scan [1 2 3] @default
- -> Times
-  -> Constant (2)
+ -> Plus
+  -> ColRef (1)
   -> ColRef (1)
 
 plan
@@ -72,14 +72,66 @@ plan
 ----
 -> Project [8] {}
  -> Scan [1 2 3] @default
- -> Times
-  -> Constant (2)
-  -> Times
-   -> Constant (2)
-   -> Times
-    -> Constant (2)
-    -> Times
-     -> Constant (2)
-     -> Times
-      -> Constant (2)
+ -> Plus
+  -> ColRef (1)
+  -> Plus
+   -> ColRef (1)
+   -> Plus
+    -> ColRef (1)
+    -> Plus
+     -> ColRef (1)
+     -> Plus
       -> ColRef (1)
+      -> Plus
+       -> ColRef (1)
+       -> Plus
+        -> ColRef (1)
+        -> Plus
+         -> ColRef (1)
+         -> Plus
+          -> ColRef (1)
+          -> Plus
+           -> ColRef (1)
+           -> Plus
+            -> ColRef (1)
+            -> Plus
+             -> ColRef (1)
+             -> Plus
+              -> ColRef (1)
+              -> Plus
+               -> ColRef (1)
+               -> Plus
+                -> ColRef (1)
+                -> Plus
+                 -> ColRef (1)
+                 -> Plus
+                  -> ColRef (1)
+                  -> Plus
+                   -> ColRef (1)
+                   -> Plus
+                    -> ColRef (1)
+                    -> Plus
+                     -> ColRef (1)
+                     -> Plus
+                      -> ColRef (1)
+                      -> Plus
+                       -> ColRef (1)
+                       -> Plus
+                        -> ColRef (1)
+                        -> Plus
+                         -> ColRef (1)
+                         -> Plus
+                          -> ColRef (1)
+                          -> Plus
+                           -> ColRef (1)
+                           -> Plus
+                            -> ColRef (1)
+                            -> Plus
+                             -> ColRef (1)
+                             -> Plus
+                              -> ColRef (1)
+                              -> Plus
+                               -> ColRef (1)
+                               -> Plus
+                                -> ColRef (1)
+                                -> ColRef (1)
